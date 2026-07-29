@@ -1,6 +1,6 @@
 # Releasing NowLayer
 
-NowLayer uses semantic versions in the form `MAJOR.MINOR.PATCH`. The version in `package.json` and the Git tag must always match.
+NowLayer uses semantic versions in the form `MAJOR.MINOR.PATCH`. Every push to `main` is validated, packaged on a clean Windows runner, and published as a GitHub Release.
 
 ## Choose the release type
 
@@ -8,28 +8,31 @@ NowLayer uses semantic versions in the form `MAJOR.MINOR.PATCH`. The version in 
 - Minor: backward-compatible features.
 - Major: breaking behavior or compatibility changes.
 
-From a clean `main` branch, run one of:
+`package.json` defines the minimum next version. For an ordinary fix, leave it unchanged: the workflow increments the patch number from the newest existing release. To start a new minor or major line, update the package version without creating a local tag:
 
 ```powershell
-npm.cmd run release:patch
-npm.cmd run release:minor
-npm.cmd run release:major
+npm.cmd version minor --no-git-tag-version
+# or
+npm.cmd version major --no-git-tag-version
 ```
 
-`npm version` updates `package.json` and `package-lock.json`, creates a version commit, and creates a matching `vMAJOR.MINOR.PATCH` Git tag. Publish both with:
+Commit the resulting `package.json` and `package-lock.json` changes with the feature work, then push `main`:
 
 ```powershell
-git push origin main --follow-tags
+git push origin main
 ```
 
 The release workflow then:
 
-1. verifies that the tag matches `package.json`;
-2. installs locked dependencies on a clean Windows runner;
-3. runs all syntax checks and tests;
-4. builds the NSIS installer;
-5. stores the installer as a workflow artifact; and
-6. creates a GitHub Release with the downloadable EXE and generated release notes.
+1. chooses `package.json`'s version for the first release, or increments the newest release's patch number;
+2. reuses the same version when the same workflow run is retried;
+3. installs locked dependencies on a clean Windows runner;
+4. runs all syntax checks and tests;
+5. builds the NSIS installer;
+6. creates the GitHub Release with the downloadable EXE and generated release notes; and
+7. deletes older releases and their tags so only the newest three public versions remain.
+
+Pull requests run the lighter **Verify** workflow. The installer/release build runs only after a commit reaches `main`.
 
 ## Optional Windows code signing
 
@@ -42,4 +45,4 @@ The workflow maps them to electron-builder's `CSC_LINK` and `CSC_KEY_PASSWORD` v
 
 ## First release
 
-The first public standalone release is `v1.0.0`. Push the repository first, then push the existing tag after the main branch is available remotely. Monitor the **Build and Release** workflow and download its EXE once the GitHub Release is published.
+The first public standalone release is `v1.0.0`. Push to `main`, monitor the **Build and Release** workflow, and download its EXE once the GitHub Release is published.

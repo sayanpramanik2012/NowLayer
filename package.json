@@ -24,10 +24,7 @@
     "test": "node --test",
     "build": "npm run check && npm test",
     "pack": "npm run build && electron-builder --dir --publish never",
-    "dist": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/build-installer.ps1",
-    "release:patch": "npm version patch",
-    "release:minor": "npm version minor",
-    "release:major": "npm version major"
+    "dist": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/build-installer.ps1"
   },
   "devDependencies": {
     "electron": "43.2.0",

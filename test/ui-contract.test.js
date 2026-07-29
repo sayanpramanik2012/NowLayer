@@ -67,12 +67,18 @@ test('standalone package and UI contain no Overwolf runtime dependency', () => {
   assert.match(main, /--smoke-test/);
 });
 
-test('release workflow builds tagged versions and creates a GitHub Release', () => {
+test('main pushes build a release and retain only the newest three versions', () => {
   const workflow = read('.github/workflows/release.yml');
+  const verificationWorkflow = read('.github/workflows/ci.yml');
   const icon = fs.readFileSync(path.join(projectRoot, 'src/assets/app-icon.png'));
 
-  assert.match(workflow, /tags:\s*[\s\S]*"v\*\.\*\.\*"/);
+  assert.match(workflow, /push:\s*[\s\S]*branches:\s*\[main\]/);
+  assert.doesNotMatch(workflow, /tags:\s*[\s\S]*v\*/);
+  assert.doesNotMatch(verificationWorkflow, /push:/);
   assert.match(workflow, /npm run dist/);
   assert.match(workflow, /gh release create/);
+  assert.match(workflow, /Select-Object -Skip 3/);
+  assert.match(workflow, /gh release delete .*--cleanup-tag --yes/);
+  assert.doesNotMatch(workflow, /actions\/upload-artifact/);
   assert.deepEqual([...icon.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10]);
 });

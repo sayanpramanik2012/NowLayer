@@ -2,14 +2,13 @@ name: Build and Release
 
 on:
   push:
-    tags:
-      - "v*.*.*"
+    branches: [main]
 
 permissions:
   contents: write
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-main
   cancel-in-progress: false
 
 jobs:
@@ -18,6 +17,7 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 30
     env:
+      GH_TOKEN: ${{ github.token }}
       CSC_LINK: ${{ secrets.WINDOWS_CSC_LINK }}
       CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CSC_KEY_PASSWORD }}
     steps:
@@ -30,39 +30,60 @@ jobs:
           node-version: 24
           cache: npm
 
-      - name: Verify semantic version tag
+      - name: Determine release version
         shell: pwsh
-        env:
-          RELEASE_TAG: ${{ github.ref_name }}
         run: |
-          $packageVersion = node -p "require('./package.json').version"
-          $expectedTag = "v$packageVersion"
-          if ($env:RELEASE_TAG -ne $expectedTag) {
-            throw "Release tag '$env:RELEASE_TAG' must match package version '$expectedTag'."
+          $baseVersion = [version](node -p "require('./package.json').version")
+          $tagPattern = '^v(?<version>\d+\.\d+\.\d+)$'
+
+          $matchingRefs = gh api "repos/$env:GITHUB_REPOSITORY/git/matching-refs/tags/v" | ConvertFrom-Json
+          $currentTag = $matchingRefs |
+            Where-Object { $_.object.sha -eq $env:GITHUB_SHA -and $_.ref -match '/tags/v\d+\.\d+\.\d+$' } |
+            ForEach-Object { $_.ref -replace '^refs/tags/', '' } |
+            Sort-Object { [version]($_ -replace '^v', '') } -Descending |
+            Select-Object -First 1
+
+          if ($currentTag) {
+            $releaseTag = $currentTag
+            $releaseVersion = $currentTag -replace '^v', ''
+          } else {
+            $releasedVersions = gh release list --limit 100 --json tagName,isDraft |
+              ConvertFrom-Json |
+              Where-Object { -not $_.isDraft -and $_.tagName -match $tagPattern } |
+              ForEach-Object { [version]($_.tagName -replace '^v', '') } |
+              Sort-Object -Descending
+
+            $latestVersion = $releasedVersions | Select-Object -First 1
+            if (-not $latestVersion -or $baseVersion -gt $latestVersion) {
+              $nextVersion = $baseVersion
+            } else {
+              $nextVersion = [version]::new(
+                $latestVersion.Major,
+                $latestVersion.Minor,
+                $latestVersion.Build + 1
+              )
+            }
+
+            $releaseVersion = $nextVersion.ToString(3)
+            $releaseTag = "v$releaseVersion"
           }
+
+          Add-Content -Path $env:GITHUB_ENV -Value "RELEASE_VERSION=$releaseVersion"
+          Add-Content -Path $env:GITHUB_ENV -Value "RELEASE_TAG=$releaseTag"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "Building NowLayer $releaseTag from commit $env:GITHUB_SHA."
 
       - name: Install locked dependencies
         run: npm ci
 
+      - name: Apply release version to build
+        shell: pwsh
+        run: npm version $env:RELEASE_VERSION --no-git-tag-version --allow-same-version
+
       - name: Test and build installer
         run: npm run dist
 
-      - name: Preserve installer artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: NowLayer-${{ github.ref_name }}-Windows
-          path: |
-            build/*.exe
-            build/*.blockmap
-            build/latest.yml
-          if-no-files-found: error
-          retention-days: 30
-
-      - name: Create GitHub Release
+      - name: Create or refresh GitHub Release
         shell: pwsh
-        env:
-          GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ github.ref_name }}
         run: |
           $releaseAssets = Get-ChildItem -Path build -File | Where-Object {
             $_.Extension -in @('.exe', '.blockmap') -or $_.Name -eq 'latest.yml'
@@ -70,7 +91,34 @@ jobs:
           if (-not $releaseAssets) {
             throw 'No release artifacts were produced.'
           }
-          gh release create $env:RELEASE_TAG @releaseAssets `
-            --verify-tag `
-            --title "NowLayer $env:RELEASE_TAG" `
-            --generate-notes
+
+          gh release view $env:RELEASE_TAG *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $env:RELEASE_TAG @releaseAssets --clobber
+          } else {
+            gh release create $env:RELEASE_TAG @releaseAssets `
+              --target $env:GITHUB_SHA `
+              --title "NowLayer $env:RELEASE_TAG" `
+              --generate-notes
+          }
+
+          if ($LASTEXITCODE -ne 0) {
+            throw "Publishing $env:RELEASE_TAG failed."
+          }
+
+      - name: Keep only the newest three releases
+        shell: pwsh
+        run: |
+          $tagPattern = '^v\d+\.\d+\.\d+$'
+          $staleReleases = gh release list --limit 100 --json tagName,publishedAt,isDraft |
+            ConvertFrom-Json |
+            Where-Object { -not $_.isDraft -and $_.tagName -match $tagPattern } |
+            Sort-Object { [datetime]$_.publishedAt } -Descending |
+            Select-Object -Skip 3
+
+          foreach ($release in $staleReleases) {
+            gh release delete $release.tagName --cleanup-tag --yes
+            if ($LASTEXITCODE -ne 0) {
+              throw "Failed to delete stale release $($release.tagName)."
+            }
+          }
