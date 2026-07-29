@@ -1,0 +1,11 @@
+node_modules/
+.npm-cache/
+.cache/
+coverage/
+build/
+dist/
+.env
+*.log
+.DS_Store
+Thumbs.db
+.vscode/settings.json

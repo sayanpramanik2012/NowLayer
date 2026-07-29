@@ -1,0 +1,76 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build Windows installer
+    runs-on: windows-latest
+    timeout-minutes: 30
+    env:
+      CSC_LINK: ${{ secrets.WINDOWS_CSC_LINK }}
+      CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CSC_KEY_PASSWORD }}
+    steps:
+      - name: Check out tagged source
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Verify semantic version tag
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          $packageVersion = node -p "require('./package.json').version"
+          $expectedTag = "v$packageVersion"
+          if ($env:RELEASE_TAG -ne $expectedTag) {
+            throw "Release tag '$env:RELEASE_TAG' must match package version '$expectedTag'."
+          }
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Test and build installer
+        run: npm run dist
+
+      - name: Preserve installer artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: NowLayer-${{ github.ref_name }}-Windows
+          path: |
+            build/*.exe
+            build/*.blockmap
+            build/latest.yml
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Create GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          $releaseAssets = Get-ChildItem -Path build -File | Where-Object {
+            $_.Extension -in @('.exe', '.blockmap') -or $_.Name -eq 'latest.yml'
+          } | Select-Object -ExpandProperty FullName
+          if (-not $releaseAssets) {
+            throw 'No release artifacts were produced.'
+          }
+          gh release create $env:RELEASE_TAG @releaseAssets `
+            --verify-tag `
+            --title "NowLayer $env:RELEASE_TAG" `
+            --generate-notes

@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self';"
+    >
+    <title>NowLayer Control Center</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <span class="brand-mark">N</span>
+          <div><strong>NowLayer</strong><small>Control Center</small></div>
+        </div>
+        <nav aria-label="NowLayer sections">
+          <button class="nav-button is-active" type="button" data-view="home"><svg class="material-icon"><use href="../assets/material-icons.svg#home"></use></svg>Home</button>
+          <button class="nav-button" type="button" data-view="video"><svg class="material-icon"><use href="../assets/material-icons.svg#pip"></use></svg>Video PiP</button>
+          <button class="nav-button" type="button" data-view="position"><svg class="material-icon"><use href="../assets/material-icons.svg#open-with"></use></svg>Position</button>
+          <button class="nav-button" type="button" data-view="settings"><svg class="material-icon"><use href="../assets/material-icons.svg#settings"></use></svg>Settings</button>
+          <button class="nav-button" type="button" data-view="help"><svg class="material-icon"><use href="../assets/material-icons.svg#help"></use></svg>Help & diagnostics</button>
+        </nav>
+        <div class="sidebar-footer">
+          <span class="status-dot" id="sidebarDot"></span>
+          <span id="sidebarStatus">Starting...</span>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <section class="view is-active" data-view-panel="home">
+          <header class="page-header">
+            <div><p class="eyebrow">YOUR GAME-SAFE MEDIA LAYER</p><h1>Good to see you.</h1></div>
+            <button id="visibilityButton" class="primary-button" type="button">Hide overlay</button>
+          </header>
+
+          <article id="welcomeCard" class="welcome-card">
+            <div>
+              <p class="eyebrow">FIRST-TIME SETUP</p>
+              <h2>Three things to know before you play</h2>
+              <ol>
+                <li>Start music or video in an app that exposes Windows media controls.</li>
+                <li>NowLayer stays click-through while locked, so the app underneath keeps the mouse.</li>
+                <li>Press <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd> when you want to use its buttons.</li>
+              </ol>
+            </div>
+            <button id="finishOnboardingButton" class="primary-button" type="button">Got it - start NowLayer</button>
+          </article>
+
+          <div class="status-grid">
+            <article class="status-card"><span class="card-icon media-icon"><svg class="material-icon"><use href="../assets/material-icons.svg#music"></use></svg></span><div><small>MEDIA SESSION</small><strong id="mediaStatus">Waiting for media</strong><span id="mediaDetail">Open Spotify, a browser, or another player</span></div></article>
+            <article class="status-card"><span class="card-icon game-icon"><svg class="material-icon"><use href="../assets/material-icons.svg#game"></use></svg></span><div><small>OVERLAY MODE</small><strong id="overlayStatus">Always-on-top active</strong><span id="overlayDetail">Standalone overlay ready</span></div></article>
+            <article class="status-card"><span class="card-icon input-icon"><svg class="material-icon"><use href="../assets/material-icons.svg#mouse"></use></svg></span><div><small>INPUT SAFETY</small><strong id="inputStatus">Click-through locked</strong><span id="inputDetail">Mouse input goes to the app underneath</span></div></article>
+          </div>
+
+          <article class="now-playing-card">
+            <div id="controlArtwork" class="control-artwork"><img id="controlArtworkImage" alt=""><span id="controlArtworkFallback">N</span></div>
+            <div class="now-playing-copy"><small>NOW PLAYING</small><strong id="controlTitle">Nothing playing</strong><span id="controlArtist">Start media to test NowLayer</span></div>
+            <div class="quick-actions">
+              <button id="quickPrevious" class="round-button" type="button" aria-label="Previous"><svg class="material-icon"><use href="../assets/material-icons.svg#skip-previous"></use></svg></button>
+              <button id="quickPlay" class="round-button accent" type="button" aria-label="Play or pause"><svg class="material-icon"><use id="quickPlayIcon" href="../assets/material-icons.svg#play"></use></svg></button>
+              <button id="quickNext" class="round-button" type="button" aria-label="Next"><svg class="material-icon"><use href="../assets/material-icons.svg#skip-next"></use></svg></button>
+            </div>
+          </article>
+
+          <article class="tip-card"><svg class="material-icon"><use href="../assets/material-icons.svg#info"></use></svg><p><strong>Fullscreen tip</strong> Borderless-windowed mode gives the broadest compatibility. Windows does not allow ordinary always-on-top windows above every exclusive-fullscreen game.</p></article>
+        </section>
+
+        <section class="view" data-view-panel="video">
+          <header class="page-header">
+            <div><p class="eyebrow">WINDOW VIDEO CAPTURE</p><h1>Keep video in view while you play.</h1></div>
+            <button id="refreshSourcesButton" class="secondary-button icon-label-button" type="button"><svg class="material-icon"><use href="../assets/material-icons.svg#refresh"></use></svg>Refresh windows</button>
+          </header>
+          <article class="capture-status-card">
+            <span class="card-icon video-icon"><svg class="material-icon"><use href="../assets/material-icons.svg#video"></use></svg></span>
+            <div><small>VIDEO PIP</small><strong id="captureStatus">Not active</strong><span id="captureDetail">Choose a browser or video-player window below.</span></div>
+            <button id="stopCaptureButton" class="secondary-button icon-label-button" type="button" hidden><svg class="material-icon"><use href="../assets/material-icons.svg#stop"></use></svg>Stop PiP</button>
+          </article>
+          <article class="panel source-panel">
+            <div class="panel-heading"><div><h2>Choose a window</h2><p>For a clean result, open the YouTube video in its own browser window, then select that window.</p></div></div>
+            <div id="sourceLoading" class="source-empty">Looking for open windows...</div>
+            <div id="sourceEmpty" class="source-empty" hidden>No capturable windows found. Open a browser or video player, then refresh.</div>
+            <div id="sourceGrid" class="source-grid" aria-live="polite"></div>
+          </article>
+          <article class="tip-card"><svg class="material-icon"><use href="../assets/material-icons.svg#info"></use></svg><p><strong>How this differs from browser PiP</strong> NowLayer captures the selected window into its own overlay. Keep the source window open and not minimized. Protected streaming services may intentionally show a black frame; YouTube and ordinary local video are the best first tests.</p></article>
+        </section>
+
+        <section class="view" data-view-panel="position">
+          <header class="page-header"><div><p class="eyebrow">PLACEMENT</p><h1>Put it where it stays out of the way.</h1></div></header>
+          <div class="two-column">
+            <article class="panel">
+              <h2>Screen position</h2>
+              <p>Choose a snap point. To place it freely, unlock the overlay and drag it.</p>
+              <div class="position-picker" aria-label="Overlay position">
+                <button data-anchor="top-left" type="button" aria-label="Top left"></button>
+                <button data-anchor="top-center" type="button" aria-label="Top center"></button>
+                <button data-anchor="top-right" type="button" aria-label="Top right"></button>
+                <button data-anchor="middle-left" type="button" aria-label="Middle left"></button>
+                <span class="screen-center">SCREEN</span>
+                <button data-anchor="middle-right" type="button" aria-label="Middle right"></button>
+                <button data-anchor="bottom-left" type="button" aria-label="Bottom left"></button>
+                <button data-anchor="bottom-center" type="button" aria-label="Bottom center"></button>
+                <button data-anchor="bottom-right" type="button" aria-label="Bottom right"></button>
+              </div>
+              <p id="positionLabel" class="selection-label">Selected: Bottom right</p>
+            </article>
+            <article class="panel preview-panel">
+              <h2>Preview</h2>
+              <div id="miniPreview" class="mini-preview"><span>N</span><div><strong id="previewTitle">Nothing playing</strong><small id="previewArtist">NowLayer preview</small></div></div>
+              <p>Changes apply immediately to the standalone overlay.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="view" data-view-panel="settings">
+          <header class="page-header"><div><p class="eyebrow">BEHAVIOR</p><h1>Keep control without leaving the game.</h1></div></header>
+          <article class="panel settings-list">
+            <label class="setting-row"><div><strong>Show overlay</strong><span>Display NowLayer above desktop apps and borderless-windowed games.</span></div><input id="visibleToggle" type="checkbox" role="switch"></label>
+            <label class="setting-row"><div><strong>Lock interaction by default</strong><span>Mouse clicks pass through to the game while locked.</span></div><input id="lockedToggle" type="checkbox" role="switch"></label>
+            <label class="setting-row"><div><strong>Compact layout</strong><span>Use a smaller 420 x 76 media card. Video PiP always uses 480 x 270.</span></div><input id="compactToggle" type="checkbox" role="switch"></label>
+            <label class="setting-row"><div><strong>Show play/pause on Video PiP</strong><span>Display one floating media button over the captured video.</span></div><input id="pipControlsToggle" type="checkbox" role="switch"></label>
+            <div class="setting-row"><div><strong>PiP button position</strong><span>Choose which corner holds the floating play/pause button.</span></div><select id="pipControlPositionSelect" aria-label="PiP button position"><option value="top-right">Top right</option><option value="top-left">Top left</option><option value="bottom-right">Bottom right</option><option value="bottom-left">Bottom left</option></select></div>
+            <label class="setting-row slider-row"><div><strong>Panel opacity</strong><span>Adjust the overlay background from subtle to solid.</span></div><div class="slider-wrap"><input id="opacitySlider" type="range" min="45" max="100" step="1"><output id="opacityValue">94%</output></div></label>
+          </article>
+          <article class="panel hotkey-panel"><h2>Hotkeys</h2><div><span>Show / hide overlay</span><kbd>Ctrl + Shift + M</kbd></div><div><span>Lock / unlock interaction</span><kbd>Ctrl + Shift + L</kbd></div></article>
+          <button id="resetButton" class="danger-button" type="button">Reset NowLayer settings</button>
+        </section>
+
+        <section class="view" data-view-panel="help">
+          <header class="page-header"><div><p class="eyebrow">HELP & DIAGNOSTICS</p><h1>Know what is working.</h1></div><button id="copyDiagnosticsButton" class="secondary-button" type="button">Copy diagnostics</button></header>
+          <article class="panel checklist">
+            <h2>Fast test checklist</h2>
+            <ol>
+              <li><strong>Start media:</strong> Play a song in Spotify, Chrome, Edge, Firefox, or VLC.</li>
+              <li><strong>Check metadata:</strong> Its title should appear on Home and on the overlay.</li>
+              <li><strong>Check safe input:</strong> While locked, click through the overlay into the app below it.</li>
+              <li><strong>Check interaction:</strong> Press Ctrl+Shift+L and use play/pause.</li>
+              <li><strong>Check video:</strong> Select an open YouTube window under Video PiP.</li>
+              <li><strong>Check a game:</strong> Start a borderless-windowed game and confirm the overlay remains visible.</li>
+            </ol>
+          </article>
+          <article class="panel diagnostics-grid">
+            <div><small>NOWLAYER</small><strong id="versionDiagnostic">-</strong></div>
+            <div><small>RUNTIME</small><strong id="runtimeDiagnostic">Electron</strong></div>
+            <div><small>WINDOW MODE</small><strong id="windowDiagnostic">Always on top</strong></div>
+            <div><small>MEDIA SOURCE</small><strong id="sourceDiagnostic">None</strong></div>
+          </article>
+          <article id="errorPanel" class="panel error-panel" hidden><h2>Media bridge message</h2><code id="mediaError"></code></article>
+          <p id="copyConfirmation" class="copy-confirmation" role="status"></p>
+        </section>
+      </main>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>

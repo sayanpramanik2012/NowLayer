@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' data:; media-src 'self' blob:; style-src 'self'; script-src 'self';"
+    >
+    <title>NowLayer</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main id="overlay" class="overlay is-locked" aria-label="NowLayer media overlay">
+      <section id="card" class="card">
+        <div id="dragRegion" class="drag-region" aria-hidden="true"></div>
+
+        <div id="videoStage" class="video-stage" aria-label="Captured video window">
+          <video id="captureVideo" autoplay muted playsinline></video>
+          <div id="videoMessage" class="video-message">Connecting to the selected window...</div>
+        </div>
+
+        <div id="pipControls" class="pip-controls" data-position="top-right">
+          <button id="pipPlayButton" class="pip-play-button" type="button" title="Play or pause video" aria-label="Play or pause video">
+            <svg class="material-icon"><use id="pipPlayIcon" href="../assets/material-icons.svg#pause"></use></svg>
+          </button>
+        </div>
+
+        <div id="artwork" class="artwork" aria-hidden="true">
+          <img id="artworkImage" alt="">
+          <span id="artworkFallback">N</span>
+          <span id="playingPulse" class="playing-pulse"></span>
+        </div>
+
+        <div class="content">
+          <div class="headline-row">
+            <div class="track-copy">
+              <p id="title" class="title">Nothing playing</p>
+              <p id="subtitle" class="subtitle">Start media in Spotify, Chrome, or another app</p>
+            </div>
+            <div class="status-cluster">
+              <span id="modeBadge" class="mode-badge" title="Standalone always-on-top overlay">ON-TOP</span>
+              <span id="lockBadge" class="lock-badge">LOCKED</span>
+            </div>
+          </div>
+
+          <div class="progress-row">
+            <span id="elapsed" class="time">0:00</span>
+            <div class="progress-track" aria-hidden="true">
+              <span id="progress" class="progress-fill"></span>
+            </div>
+            <span id="duration" class="time">0:00</span>
+          </div>
+
+          <div class="control-row">
+            <span id="source" class="source">NOWLAYER</span>
+            <div class="media-controls" aria-label="Media controls">
+              <button id="previousButton" class="icon-button" type="button" title="Previous track" aria-label="Previous track"><svg class="material-icon"><use href="../assets/material-icons.svg#skip-previous"></use></svg></button>
+              <button id="playButton" class="play-button" type="button" title="Play or pause" aria-label="Play or pause"><svg class="material-icon"><use id="playIcon" href="../assets/material-icons.svg#play"></use></svg></button>
+              <button id="nextButton" class="icon-button" type="button" title="Next track" aria-label="Next track"><svg class="material-icon"><use href="../assets/material-icons.svg#skip-next"></use></svg></button>
+            </div>
+            <div class="window-controls" aria-label="Overlay controls">
+              <button id="anchorButton" class="small-button anchor-button" type="button" title="Move to next corner" aria-label="Move to next corner">BR</button>
+              <button id="compactButton" class="small-button" type="button" title="Toggle compact mode" aria-label="Toggle compact mode"><svg class="material-icon"><use id="compactIcon" href="../assets/material-icons.svg#remove"></use></svg></button>
+              <button id="lockButton" class="small-button" type="button" title="Lock or unlock overlay" aria-label="Lock or unlock overlay"><svg class="material-icon"><use id="lockIcon" href="../assets/material-icons.svg#lock"></use></svg></button>
+              <button id="hideButton" class="small-button close-button" type="button" title="Hide overlay (Ctrl+Shift+M to restore)" aria-label="Hide overlay"><svg class="material-icon"><use href="../assets/material-icons.svg#close"></use></svg></button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <script src="../shared/media-timeline.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

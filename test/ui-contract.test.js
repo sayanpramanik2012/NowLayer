@@ -1,0 +1,78 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const test = require('node:test');
+
+const projectRoot = path.join(__dirname, '..');
+
+function read(relativePath) {
+  return fs.readFileSync(path.join(projectRoot, relativePath), 'utf8');
+}
+
+function assertJavaScriptIdsExist(htmlPath, scriptPath) {
+  const html = read(htmlPath);
+  const script = read(scriptPath);
+  const references = [...script.matchAll(/getElementById\('([^']+)'\)/g)].map((match) => match[1]);
+  assert.ok(references.length > 0, `${scriptPath} should reference UI elements`);
+  for (const id of references) {
+    assert.match(html, new RegExp(`id=["']${id}["']`), `${id} is missing from ${htmlPath}`);
+  }
+}
+
+test('overlay script only references elements that exist', () => {
+  assertJavaScriptIdsExist('src/renderer/index.html', 'src/renderer/app.js');
+});
+
+test('control center script only references elements that exist', () => {
+  assertJavaScriptIdsExist('src/control/index.html', 'src/control/app.js');
+});
+
+test('renderer pages enforce a restrictive content security policy', () => {
+  for (const file of ['src/renderer/index.html', 'src/control/index.html']) {
+    const html = read(file);
+    assert.match(html, /Content-Security-Policy/);
+    assert.doesNotMatch(html, /unsafe-inline|unsafe-eval/);
+  }
+});
+
+test('video PiP controls and bundled Material icon sprite are present', () => {
+  const controlHtml = read('src/control/index.html');
+  const overlayHtml = read('src/renderer/index.html');
+  const overlayStyles = read('src/renderer/styles.css');
+  const preload = read('src/preload/index.js');
+  const icons = read('src/assets/material-icons.svg');
+  assert.match(controlHtml, /data-view-panel="video"/);
+  assert.match(controlHtml, /id="pipControlsToggle"/);
+  assert.match(controlHtml, /id="pipControlPositionSelect"/);
+  assert.match(overlayHtml, /id="pipPlayButton"/);
+  assert.match(overlayStyles, /\.overlay\.is-video \.content\s*{\s*display: none;/);
+  assert.match(preload, /listCaptureSources/);
+  assert.match(preload, /setCaptureSource/);
+  assert.match(icons, /<symbol id="pip"/);
+  assert.match(icons, /<symbol id="lock-open"/);
+});
+
+test('standalone package and UI contain no Overwolf runtime dependency', () => {
+  const packageJson = JSON.parse(read('package.json'));
+  const main = read('src/main/index.js');
+  const manager = read('src/main/overlay-manager.js');
+  const control = read('src/control/index.html');
+
+  assert.equal(packageJson.devDependencies.electron, '43.2.0');
+  assert.equal(packageJson.devDependencies['@overwolf/ow-electron'], undefined);
+  assert.equal(packageJson.overwolf, undefined);
+  assert.doesNotMatch(`${main}\n${manager}\n${control}`, /overwolf/i);
+  assert.match(manager, /setAlwaysOnTop\(true, 'screen-saver'\)/);
+  assert.match(manager, /setIgnoreMouseEvents\(this\.settings\.locked/);
+  assert.match(main, /--smoke-test/);
+});
+
+test('release workflow builds tagged versions and creates a GitHub Release', () => {
+  const workflow = read('.github/workflows/release.yml');
+  const icon = fs.readFileSync(path.join(projectRoot, 'src/assets/app-icon.png'));
+
+  assert.match(workflow, /tags:\s*[\s\S]*"v\*\.\*\.\*"/);
+  assert.match(workflow, /npm run dist/);
+  assert.match(workflow, /gh release create/);
+  assert.deepEqual([...icon.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10]);
+});

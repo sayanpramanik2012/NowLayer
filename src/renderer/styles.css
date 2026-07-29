@@ -1,0 +1,469 @@
+:root {
+  color-scheme: dark;
+  --panel-opacity: 0.94;
+  --accent: #ff4f64;
+  --accent-soft: rgba(255, 79, 100, 0.2);
+  --text: #f8f8fb;
+  --muted: #a8a9b4;
+  --line: rgba(255, 255, 255, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: transparent;
+  font-family: Inter, "Segoe UI Variable", "Segoe UI", sans-serif;
+  user-select: none;
+}
+
+button {
+  font: inherit;
+}
+
+.material-icon {
+  width: 15px;
+  height: 15px;
+  fill: currentColor;
+  pointer-events: none;
+}
+
+.overlay {
+  width: 100%;
+  height: 100%;
+  padding: 4px;
+}
+
+.card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 18px;
+  background:
+    linear-gradient(135deg, rgba(35, 35, 43, var(--panel-opacity)), rgba(13, 13, 18, var(--panel-opacity))),
+    rgba(12, 12, 16, var(--panel-opacity));
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.36);
+  backdrop-filter: blur(18px) saturate(135%);
+}
+
+.card::after {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(115deg, rgba(255, 255, 255, 0.08), transparent 34%);
+  content: "";
+  pointer-events: none;
+}
+
+.drag-region {
+  position: absolute;
+  z-index: 2;
+  inset: 0 124px 0 0;
+  -webkit-app-region: drag;
+  cursor: move;
+}
+
+.video-stage {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  display: none;
+  place-items: center;
+  overflow: hidden;
+  background: #07070a;
+}
+
+.video-stage video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #07070a;
+}
+
+.video-message {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 36px;
+  color: #a8a9b4;
+  font-size: 11px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.video-stage.has-video .video-message {
+  display: none;
+}
+
+.pip-controls {
+  position: absolute;
+  z-index: 5;
+  display: none;
+  -webkit-app-region: no-drag;
+}
+
+.overlay.is-video.show-pip-controls .pip-controls {
+  display: block;
+}
+
+.pip-controls[data-position="top-left"] { top: 13px; left: 13px; }
+.pip-controls[data-position="top-right"] { top: 13px; right: 13px; }
+.pip-controls[data-position="bottom-left"] { bottom: 13px; left: 13px; }
+.pip-controls[data-position="bottom-right"] { right: 13px; bottom: 13px; }
+
+.pip-play-button {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 50%;
+  color: white;
+  background: rgba(10, 10, 14, 0.78);
+  box-shadow: 0 7px 22px rgba(0, 0, 0, 0.42);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+}
+
+.pip-play-button:hover {
+  border-color: rgba(255, 255, 255, 0.42);
+  background: rgba(255, 79, 100, 0.9);
+}
+
+.pip-play-button .material-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.artwork {
+  position: relative;
+  z-index: 1;
+  width: 76px;
+  height: 76px;
+  align-self: center;
+  justify-self: center;
+  overflow: hidden;
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 28% 18%, rgba(255, 255, 255, 0.38), transparent 22%),
+    linear-gradient(145deg, #ff596f, #7c3aed 58%, #161621);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.3);
+}
+
+.artwork img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  object-fit: cover;
+}
+
+.artwork.has-image img {
+  display: block;
+}
+
+.artwork.has-image #artworkFallback {
+  display: none;
+}
+
+#artworkFallback {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  color: white;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.08em;
+}
+
+.playing-pulse {
+  position: absolute;
+  right: 7px;
+  bottom: 7px;
+  width: 9px;
+  height: 9px;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  border-radius: 999px;
+  background: #4ade80;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.35);
+}
+
+.overlay:not(.is-playing) .playing-pulse {
+  background: #8b8d99;
+}
+
+.content {
+  position: relative;
+  z-index: 3;
+  min-width: 0;
+  padding: 13px 14px 10px 2px;
+}
+
+.headline-row,
+.control-row,
+.progress-row {
+  display: flex;
+  align-items: center;
+}
+
+.headline-row {
+  gap: 8px;
+}
+
+.track-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.title,
+.subtitle {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.title {
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 680;
+  line-height: 1.35;
+}
+
+.subtitle {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+.status-cluster {
+  display: flex;
+  gap: 4px;
+  align-self: flex-start;
+  -webkit-app-region: no-drag;
+}
+
+.mode-badge,
+.lock-badge {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px 6px;
+  color: #c9cad3;
+  background: rgba(255, 255, 255, 0.045);
+  font-size: 7px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+}
+
+.lock-badge {
+  color: #fda4af;
+  border-color: rgba(255, 79, 100, 0.28);
+  background: var(--accent-soft);
+}
+
+.overlay:not(.is-locked) .lock-badge {
+  color: #86efac;
+  border-color: rgba(74, 222, 128, 0.28);
+  background: rgba(74, 222, 128, 0.12);
+}
+
+.progress-row {
+  gap: 7px;
+  margin-top: 7px;
+}
+
+.time {
+  width: 27px;
+  color: #858793;
+  font-size: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.time:last-child {
+  text-align: right;
+}
+
+.progress-track {
+  height: 3px;
+  flex: 1;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.11);
+}
+
+.progress-fill {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent), #ff8a5b);
+  box-shadow: 0 0 8px rgba(255, 79, 100, 0.45);
+  transition: width 220ms linear;
+}
+
+.control-row {
+  min-height: 29px;
+  margin-top: 4px;
+}
+
+.source {
+  max-width: 84px;
+  overflow: hidden;
+  color: #777986;
+  font-size: 8px;
+  font-weight: 750;
+  letter-spacing: 0.1em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.media-controls {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  gap: 4px;
+}
+
+.window-controls {
+  display: flex;
+  gap: 3px;
+}
+
+.icon-button,
+.play-button,
+.small-button {
+  display: grid;
+  place-items: center;
+  border: 0;
+  color: #d8d9e0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-app-region: no-drag;
+}
+
+.anchor-button {
+  font-size: 8px;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+}
+
+.icon-button {
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  font-size: 9px;
+}
+
+.play-button {
+  width: 27px;
+  height: 27px;
+  border-radius: 999px;
+  color: #fff;
+  background: linear-gradient(145deg, #ff6175, #e83d58);
+  box-shadow: 0 5px 12px rgba(232, 61, 88, 0.28);
+  font-size: 10px;
+}
+
+.small-button {
+  width: 22px;
+  height: 22px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: #9294a0;
+  font-size: 9px;
+}
+
+.small-button:hover,
+.icon-button:hover {
+  border-color: var(--line);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.close-button:hover {
+  color: #fecdd3;
+  border-color: rgba(255, 79, 100, 0.28);
+  background: rgba(255, 79, 100, 0.14);
+}
+
+button:disabled {
+  cursor: default;
+  opacity: 0.28;
+}
+
+.overlay.is-compact .card {
+  grid-template-columns: 62px minmax(0, 1fr);
+  border-radius: 14px;
+}
+
+.overlay.is-compact .artwork {
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+}
+
+.overlay.is-compact .content {
+  padding-top: 10px;
+}
+
+.overlay.is-compact .subtitle,
+.overlay.is-compact .progress-row,
+.overlay.is-compact .source,
+.overlay.is-compact .mode-badge,
+.overlay.is-compact #anchorButton,
+.overlay.is-compact #compactButton {
+  display: none;
+}
+
+.overlay.is-compact .control-row {
+  margin-top: 2px;
+}
+
+.overlay.is-compact .window-controls {
+  margin-left: auto;
+}
+
+.overlay.no-media .progress-fill {
+  width: 0 !important;
+}
+
+.overlay.is-video .card {
+  display: block;
+  border-radius: 16px;
+  background: #07070a;
+}
+
+.overlay.is-video .card::after {
+  display: none;
+}
+
+.overlay.is-video .video-stage {
+  display: grid;
+}
+
+.overlay.is-video .artwork {
+  display: none;
+}
+
+.overlay.is-video .content {
+  display: none;
+}
+
+.overlay.is-video .drag-region {
+  z-index: 4;
+  inset: 0;
+}
