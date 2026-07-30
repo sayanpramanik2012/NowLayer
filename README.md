@@ -7,6 +7,8 @@
 <p align="center"><strong>Your media. Your screen. Your rules.</strong></p>
 
 <p align="center">
+  <a href="https://sayanpramanik2012.github.io/NowLayer/">Website</a>
+  ·
   <a href="https://github.com/sayanpramanik2012/NowLayer/releases/latest">Download for Windows</a>
   ·
   <a href="https://github.com/sayanpramanik2012/NowLayer/issues">Report an issue</a>
