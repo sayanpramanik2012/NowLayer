@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://sayanpramanik2012.github.io/NowLayer/sitemap.xml

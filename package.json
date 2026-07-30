@@ -20,7 +20,7 @@
     "start": "electron .",
     "dev": "electron . --remote-debugging-port=9222",
     "doctor": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/doctor.ps1",
-    "check": "node --check src/main/index.js && node --check src/main/config.js && node --check src/main/media-monitor.js && node --check src/main/overlay-manager.js && node --check src/main/video-capture.js && node --check src/preload/index.js && node --check src/shared/media-timeline.js && node --check src/renderer/app.js && node --check src/control/app.js && node --check test/config.test.js && node --check test/media-monitor.test.js && node --check test/media-timeline.test.js && node --check test/overlay-manager.test.js && node --check test/video-capture.test.js && node --check test/ui-contract.test.js",
+    "check": "node --check src/main/index.js && node --check src/main/config.js && node --check src/main/media-monitor.js && node --check src/main/overlay-manager.js && node --check src/main/video-capture.js && node --check src/preload/index.js && node --check src/shared/media-timeline.js && node --check src/renderer/app.js && node --check src/control/app.js && node --check site/script.js && node --check test/config.test.js && node --check test/media-monitor.test.js && node --check test/media-timeline.test.js && node --check test/overlay-manager.test.js && node --check test/video-capture.test.js && node --check test/ui-contract.test.js && node --check test/site.test.js",
     "test": "node --test",
     "build": "npm run check && npm test",
     "pack": "npm run build && electron-builder --dir --publish never",
