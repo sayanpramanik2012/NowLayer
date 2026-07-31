@@ -1,9 +1,11 @@
 const path = require('node:path');
+const { pathToFileURL } = require('node:url');
 const {
   app,
   BrowserWindow,
   clipboard,
   desktopCapturer,
+  dialog,
   globalShortcut,
   ipcMain,
   Menu,
@@ -20,6 +22,7 @@ const {
 } = require('./config');
 const { MediaMonitor } = require('./media-monitor');
 const { OverlayManager } = require('./overlay-manager');
+const { Timekeeper } = require('./timekeeper');
 const {
   findSelectedSource,
   normalizeVideoState,
@@ -60,20 +63,29 @@ let shuttingDown = false;
 let controlWindow = null;
 let tray = null;
 let videoState = normalizeVideoState();
+let timekeeper = null;
 
 function currentState() {
+  const utilities = timekeeper?.getState() ?? overlayManager.settings.utilities;
   return {
     media: mediaState,
     settings: overlayManager.settings,
     platform: overlayManager.getStatus(),
     video: videoState,
+    utilities: {
+      ...utilities,
+      timer: { ...utilities.timer, soundUrl: utilities.timer.soundPath ? pathToFileURL(utilities.timer.soundPath).toString() : '' },
+      alarm: { ...utilities.alarm, soundUrl: utilities.alarm.soundPath ? pathToFileURL(utilities.alarm.soundPath).toString() : '' },
+    },
     app: {
       name: 'NowLayer',
       version: app.getVersion(),
       isPackaged: app.isPackaged,
+      startupEnabled: process.platform === 'win32' ? app.getLoginItemSettings().openAtLogin : false,
       hotkeys: {
         visibility: 'Ctrl+Shift+M',
         lock: 'Ctrl+Shift+L',
+        dismissAlert: 'Ctrl+Shift+A',
       },
     },
   };
@@ -256,9 +268,35 @@ ipcMain.handle('nowlayer:set-setting', (_event, key, value) => {
     'pipControlPosition',
     'opacity',
     'anchor',
+    'utilities',
   ]);
   if (!allowed.has(key)) throw new Error('Unsupported setting.');
+  if (key === 'utilities') {
+    timekeeper.update(value);
+    return overlayManager.settings;
+  }
   return overlayManager.updateSettings({ [key]: value });
+});
+
+ipcMain.handle('nowlayer:timer-start', (_event, seconds) => timekeeper.startTimer(seconds));
+ipcMain.handle('nowlayer:timer-pause', () => timekeeper.pauseTimer());
+ipcMain.handle('nowlayer:timer-reset', () => timekeeper.resetTimer());
+ipcMain.handle('nowlayer:alert-dismiss', () => timekeeper.dismissAlert());
+ipcMain.handle('nowlayer:choose-alert-sound', async () => {
+  const result = await dialog.showOpenDialog({
+    title: 'Choose alert sound',
+    properties: ['openFile'],
+    filters: [{ name: 'Audio', extensions: ['mp3', 'wav', 'ogg', 'm4a', 'aac'] }],
+  });
+  if (result.canceled || !result.filePaths[0]) return null;
+  const filePath = result.filePaths[0];
+  return { path: filePath, url: pathToFileURL(filePath).toString() };
+});
+
+ipcMain.handle('nowlayer:set-startup', (_event, enabled) => {
+  if (process.platform !== 'win32') return false;
+  app.setLoginItemSettings({ openAtLogin: enabled === true, openAsHidden: false });
+  return app.getLoginItemSettings().openAtLogin;
 });
 
 ipcMain.handle('nowlayer:media-action', async (_event, action) => {
@@ -330,8 +368,10 @@ function registerDesktopHotkeys() {
   const lockRegistered = globalShortcut.register('CommandOrControl+Shift+L', () => {
     overlayManager.toggleLocked();
   });
+  const dismissRegistered = globalShortcut.register('CommandOrControl+Shift+A', () => timekeeper.dismissAlert());
   if (!visibilityRegistered) console.warn('[hotkey] Ctrl+Shift+M is already in use.');
   if (!lockRegistered) console.warn('[hotkey] Ctrl+Shift+L is already in use.');
+  if (!dismissRegistered) console.warn('[hotkey] Ctrl+Shift+A is already in use.');
 }
 
 const hasSingleInstanceLock = app.requestSingleInstanceLock();
@@ -349,6 +389,12 @@ if (!hasSingleInstanceLock) {
     overlayManager.setSettings(smokeTestMode
       ? { ...loadedSettings, visible: false, onboardingComplete: true }
       : loadedSettings);
+    timekeeper = new Timekeeper(overlayManager.settings.utilities);
+    timekeeper.on('change', (utilities) => {
+      overlayManager.updateSettings({ utilities });
+      broadcastState();
+    });
+    timekeeper.start();
     overlayManager.createDesktopWindow();
     if (!smokeTestMode) createTray();
     createControlWindow({ show: !smokeTestMode });
@@ -375,6 +421,7 @@ app.on('before-quit', () => {
     try { saveSettings(settingsPath, overlayManager.settings); } catch { /* best effort */ }
   }
   mediaMonitor.stop();
+  timekeeper?.stop();
   globalShortcut.unregisterAll();
   overlayManager.dispose();
   if (tray) tray.destroy();

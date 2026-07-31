@@ -25,6 +25,9 @@ Checking a song title should not require an Alt+Tab. Neither should keeping a vi
 - **Game-safe click-through mode** — Lock NowLayer and mouse input passes directly to the game or app underneath it.
 - **Control when you want it** — Unlock the overlay for playback controls, positioning, and customization, then lock it again in one keystroke.
 - **Fits your setup** — Snap it to any edge or corner, drag it freely, switch to compact mode, and tune the opacity.
+- **Time that stays in sight** — Add a compact clock, run a visible countdown, or set a daily alarm without leaving the game.
+- **Alerts your way** — Silent timers shake the overlay; audible timers and alarms can use the built-in tone or your own audio file.
+- **Ready when you are** — Optionally launch NowLayer with Windows so it is waiting in the system tray.
 - **Private by design** — Media information, captured video, and preferences stay on your Windows PC.
 - **Completely standalone** — No Overwolf client, account, browser extension, or game-specific plugin is required.
 
@@ -43,6 +46,7 @@ NowLayer remains available from the Windows system tray when its Control Center 
 | --- | --- |
 | Show or hide NowLayer | `Ctrl` + `Shift` + `M` |
 | Lock or unlock interaction | `Ctrl` + `Shift` + `L` |
+| Dismiss an active timer or alarm | `Ctrl` + `Shift` + `A` |
 
 ## Compatibility
 

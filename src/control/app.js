@@ -48,6 +48,24 @@ const elements = {
   sourceDiagnostic: document.getElementById('sourceDiagnostic'),
   errorPanel: document.getElementById('errorPanel'),
   mediaError: document.getElementById('mediaError'),
+  clockToggle: document.getElementById('clockToggle'),
+  startupToggle: document.getElementById('startupToggle'),
+  timerReadout: document.getElementById('timerReadout'),
+  timerMinutes: document.getElementById('timerMinutes'),
+  timerSeconds: document.getElementById('timerSeconds'),
+  timerStartButton: document.getElementById('timerStartButton'),
+  timerPauseButton: document.getElementById('timerPauseButton'),
+  timerResetButton: document.getElementById('timerResetButton'),
+  timerSoundToggle: document.getElementById('timerSoundToggle'),
+  timerSoundButton: document.getElementById('timerSoundButton'),
+  timerSoundLabel: document.getElementById('timerSoundLabel'),
+  alarmReadout: document.getElementById('alarmReadout'),
+  alarmTime: document.getElementById('alarmTime'),
+  alarmEnabledToggle: document.getElementById('alarmEnabledToggle'),
+  alarmSoundToggle: document.getElementById('alarmSoundToggle'),
+  alarmSoundButton: document.getElementById('alarmSoundButton'),
+  alarmSoundLabel: document.getElementById('alarmSoundLabel'),
+  dismissActiveAlertButton: document.getElementById('dismissActiveAlertButton'),
 };
 
 const iconPath = '../assets/material-icons.svg';
@@ -98,6 +116,29 @@ function friendlySource(source) {
   if (value.includes('firefox')) return 'Firefox';
   if (value.includes('vlc')) return 'VLC';
   return String(source || 'None');
+}
+
+function formatDuration(seconds) {
+  const safe = Math.max(0, Math.round(Number(seconds) || 0));
+  const hours = Math.floor(safe / 3600);
+  const minutes = Math.floor((safe % 3600) / 60);
+  const remainder = safe % 60;
+  return hours > 0 ? `${hours}:${String(minutes).padStart(2, '0')}:${String(remainder).padStart(2, '0')}` : `${String(minutes).padStart(2, '0')}:${String(remainder).padStart(2, '0')}`;
+}
+
+function timerRemaining(timer) {
+  if (timer?.active && timer.endAt > Date.now()) return Math.ceil((timer.endAt - Date.now()) / 1000);
+  return Number(timer?.pausedRemaining) || 0;
+}
+
+async function updateUtilities(patch) {
+  const utilities = state?.utilities ?? { timer: {}, alarm: {} };
+  return setSetting('utilities', {
+    ...utilities,
+    ...patch,
+    timer: { ...utilities.timer, ...patch.timer },
+    alarm: { ...utilities.alarm, ...patch.alarm },
+  });
 }
 
 function renderCaptureSources() {
@@ -182,6 +223,7 @@ function render(nextState) {
   const platform = state.platform ?? {};
   const appInfo = state.app ?? {};
   const video = state.video ?? {};
+  const utilities = state.utilities ?? { timer: {}, alarm: {} };
   const available = media.available === true;
   const playing = String(media.status).toLowerCase() === 'playing';
 
@@ -196,6 +238,18 @@ function render(nextState) {
   const opacityPercent = Math.round((settings.opacity ?? 0.94) * 100);
   if (document.activeElement !== elements.opacitySlider) elements.opacitySlider.value = String(opacityPercent);
   elements.opacityValue.textContent = `${opacityPercent}%`;
+  elements.clockToggle.checked = utilities.showClock === true;
+  elements.startupToggle.checked = appInfo.startupEnabled === true;
+  elements.timerReadout.textContent = formatDuration(timerRemaining(utilities.timer));
+  elements.timerPauseButton.disabled = utilities.timer?.active !== true;
+  elements.timerSoundToggle.checked = utilities.timer?.soundEnabled === true;
+  elements.timerSoundLabel.textContent = utilities.timer?.soundPath ? utilities.timer.soundPath.split(/[\\/]/).at(-1) : 'Default tone';
+  elements.alarmTime.value = utilities.alarm?.time || '07:00';
+  elements.alarmEnabledToggle.checked = utilities.alarm?.enabled === true;
+  elements.alarmSoundToggle.checked = utilities.alarm?.soundEnabled === true;
+  elements.alarmSoundLabel.textContent = utilities.alarm?.soundPath ? utilities.alarm.soundPath.split(/[\\/]/).at(-1) : 'Default tone';
+  elements.alarmReadout.textContent = utilities.alarm?.enabled ? `Daily at ${utilities.alarm.time}` : 'Off';
+  elements.dismissActiveAlertButton.hidden = !utilities.alert;
 
   elements.mediaStatus.textContent = available ? (playing ? 'Playing now' : 'Media paused') : 'Waiting for media';
   elements.mediaDetail.textContent = available
@@ -296,6 +350,33 @@ elements.opacitySlider.addEventListener('input', () => {
     setSetting('opacity', Number(elements.opacitySlider.value) / 100);
   }, 80);
 });
+elements.clockToggle.addEventListener('change', () => updateUtilities({ showClock: elements.clockToggle.checked }));
+elements.startupToggle.addEventListener('change', async () => {
+  try {
+    const enabled = await window.nowLayer.setStartup(elements.startupToggle.checked);
+    render({ ...state, app: { ...state.app, startupEnabled: enabled } });
+  } catch (error) { console.error('Could not update Windows startup:', error); }
+});
+elements.timerStartButton.addEventListener('click', async () => {
+  const seconds = Number(elements.timerMinutes.value || 0) * 60 + Number(elements.timerSeconds.value || 0);
+  if (seconds < 1) { elements.timerReadout.textContent = 'Choose at least 1 second'; return; }
+  await window.nowLayer.startTimer(seconds);
+});
+elements.timerPauseButton.addEventListener('click', () => window.nowLayer.pauseTimer());
+elements.timerResetButton.addEventListener('click', () => window.nowLayer.resetTimer());
+elements.timerSoundToggle.addEventListener('change', () => updateUtilities({ timer: { soundEnabled: elements.timerSoundToggle.checked } }));
+elements.alarmEnabledToggle.addEventListener('change', () => updateUtilities({ alarm: { enabled: elements.alarmEnabledToggle.checked } }));
+elements.alarmTime.addEventListener('change', () => updateUtilities({ alarm: { time: elements.alarmTime.value } }));
+elements.alarmSoundToggle.addEventListener('change', () => updateUtilities({ alarm: { soundEnabled: elements.alarmSoundToggle.checked } }));
+elements.timerSoundButton.addEventListener('click', async () => {
+  const result = await window.nowLayer.chooseAlertSound();
+  if (result) updateUtilities({ timer: { soundPath: result.path } });
+});
+elements.alarmSoundButton.addEventListener('click', async () => {
+  const result = await window.nowLayer.chooseAlertSound();
+  if (result) updateUtilities({ alarm: { soundPath: result.path } });
+});
+elements.dismissActiveAlertButton.addEventListener('click', () => window.nowLayer.dismissAlert());
 elements.quickPrevious.addEventListener('click', () => mediaAction('previous'));
 elements.quickPlay.addEventListener('click', () => mediaAction('play-pause'));
 elements.quickNext.addEventListener('click', () => mediaAction('next'));
@@ -331,3 +412,6 @@ window.nowLayer.onState(render);
 window.nowLayer.getState().then(render).catch((error) => {
   console.error('Could not load NowLayer state:', error);
 });
+setInterval(() => {
+  if (state?.utilities?.timer) elements.timerReadout.textContent = formatDuration(timerRemaining(state.utilities.timer));
+}, 250);

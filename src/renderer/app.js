@@ -28,6 +28,13 @@ const elements = {
   lockButton: document.getElementById('lockButton'),
   lockIcon: document.getElementById('lockIcon'),
   hideButton: document.getElementById('hideButton'),
+  utilityBar: document.getElementById('utilityBar'),
+  clockDisplay: document.getElementById('clockDisplay'),
+  timerDisplay: document.getElementById('timerDisplay'),
+  alertOverlay: document.getElementById('alertOverlay'),
+  alertTitle: document.getElementById('alertTitle'),
+  alertMessage: document.getElementById('alertMessage'),
+  dismissAlertButton: document.getElementById('dismissAlertButton'),
 };
 
 const iconPath = '../assets/material-icons.svg';
@@ -48,6 +55,8 @@ let state = null;
 let captureStream = null;
 let captureRevision = -1;
 let captureRequest = 0;
+let handledAlertAt = 0;
+let alertAudio = null;
 
 function setIcon(element, name) {
   element.setAttribute('href', `${iconPath}#${name}`);
@@ -58,6 +67,76 @@ function formatTime(seconds) {
   const whole = Math.floor(seconds);
   const minutes = Math.floor(whole / 60);
   return `${minutes}:${String(whole % 60).padStart(2, '0')}`;
+}
+
+function formatCountdown(seconds) {
+  const safe = Math.max(0, Math.round(Number(seconds) || 0));
+  const hours = Math.floor(safe / 3600);
+  const minutes = Math.floor((safe % 3600) / 60);
+  const remainder = safe % 60;
+  return hours > 0 ? `${hours}:${String(minutes).padStart(2, '0')}:${String(remainder).padStart(2, '0')}` : `${String(minutes).padStart(2, '0')}:${String(remainder).padStart(2, '0')}`;
+}
+
+function timerRemaining(timer) {
+  if (timer?.active && timer.endAt > Date.now()) return Math.ceil((timer.endAt - Date.now()) / 1000);
+  return Number(timer?.pausedRemaining) || 0;
+}
+
+function stopAlertSound() {
+  if (alertAudio) {
+    alertAudio.pause();
+    alertAudio = null;
+  }
+}
+
+function playDefaultTone(repeat) {
+  try {
+    const context = new AudioContext();
+    const beep = () => {
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      oscillator.frequency.value = 880;
+      gain.gain.setValueAtTime(0.0001, context.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.13, context.currentTime + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.28);
+      oscillator.connect(gain).connect(context.destination);
+      oscillator.start(); oscillator.stop(context.currentTime + 0.3);
+    };
+    beep();
+    if (repeat) alertAudio = { pause: () => { context.close(); } };
+    if (repeat) {
+      const id = setInterval(beep, 900);
+      alertAudio = { pause: () => { clearInterval(id); context.close(); } };
+    } else setTimeout(() => context.close(), 500);
+  } catch { /* Browser audio may be unavailable until first interaction. Visual alert still works. */ }
+}
+
+function renderUtilities() {
+  const utilities = state?.utilities ?? {};
+  const timer = utilities.timer ?? {};
+  elements.clockDisplay.textContent = utilities.showClock ? new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(new Date()) : '';
+  elements.timerDisplay.textContent = timer.active || timer.pausedRemaining ? `T ${formatCountdown(timerRemaining(timer))}` : '';
+  elements.overlay.classList.toggle('has-utilities', Boolean(elements.clockDisplay.textContent || elements.timerDisplay.textContent));
+}
+
+function renderAlert(alert, utilities) {
+  const active = Boolean(alert);
+  elements.alertOverlay.hidden = !active;
+  if (!active) { stopAlertSound(); return; }
+  const isAlarm = alert.kind === 'alarm';
+  elements.alertTitle.textContent = isAlarm ? 'Alarm' : 'Timer finished';
+  elements.alertMessage.textContent = isAlarm ? `It is ${utilities.alarm?.time || 'time'}. Ctrl + Shift + A dismisses.` : 'Time is up. Ctrl + Shift + A dismisses.';
+  if (alert.raisedAt && alert.raisedAt !== handledAlertAt) {
+    handledAlertAt = alert.raisedAt;
+    if (alert.soundEnabled) {
+      stopAlertSound();
+      if (alert.soundPath && (isAlarm ? utilities.alarm?.soundUrl : utilities.timer?.soundUrl)) {
+        alertAudio = new Audio(isAlarm ? utilities.alarm.soundUrl : utilities.timer.soundUrl);
+        alertAudio.loop = isAlarm;
+        alertAudio.play().catch(() => playDefaultTone(isAlarm));
+      } else playDefaultTone(isAlarm);
+    }
+  }
 }
 
 function friendlySource(sourceName) {
@@ -149,6 +228,7 @@ function render(nextState) {
   const settings = state.settings ?? {};
   const platform = state.platform ?? {};
   const video = state.video ?? {};
+  const utilities = state.utilities ?? {};
   const available = media.available === true;
   const playing = String(media.status).toLowerCase() === 'playing';
 
@@ -180,6 +260,8 @@ function render(nextState) {
   setIcon(elements.pipPlayIcon, playing ? 'pause' : 'play');
   elements.pipControls.dataset.position = settings.pipControlPosition || 'top-right';
   elements.anchorButton.textContent = anchorLabels[settings.anchor] || 'BR';
+  renderUtilities();
+  renderAlert(utilities.alert, utilities);
 
   elements.previousButton.disabled = !available || media.controls?.previous !== true;
   elements.playButton.disabled = !available || media.controls?.playPause !== true;
@@ -232,8 +314,12 @@ elements.anchorButton.addEventListener('click', () => {
   const nextAnchor = anchorCycle[(currentIndex + 1 + anchorCycle.length) % anchorCycle.length];
   setSetting('anchor', nextAnchor);
 });
+elements.dismissAlertButton.addEventListener('click', async () => {
+  try { await window.nowLayer.dismissAlert(); } catch (error) { console.error('Could not dismiss alert:', error); }
+});
 window.addEventListener('beforeunload', stopCaptureStream);
-setInterval(updateLiveTimeline, 250);
+window.addEventListener('beforeunload', stopAlertSound);
+setInterval(() => { updateLiveTimeline(); renderUtilities(); }, 250);
 window.nowLayer.onState(render);
 window.nowLayer.getState().then(render).catch((error) => {
   console.error('Could not load initial state:', error);

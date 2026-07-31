@@ -52,6 +52,21 @@ test('video PiP controls and bundled Material icon sprite are present', () => {
   assert.match(icons, /<symbol id="lock-open"/);
 });
 
+test('timer, alarm, clock, and startup controls are available through the safe bridge', () => {
+  const control = read('src/control/index.html');
+  const overlay = read('src/renderer/index.html');
+  const preload = read('src/preload/index.js');
+  const main = read('src/main/index.js');
+  assert.match(control, /data-view-panel="timers"/);
+  assert.match(control, /id="startupToggle"/);
+  assert.match(control, /id="alarmTime"/);
+  assert.match(overlay, /id="alertOverlay"/);
+  assert.match(preload, /startTimer/);
+  assert.match(preload, /setStartup/);
+  assert.match(main, /setLoginItemSettings/);
+  assert.match(main, /Ctrl\+Shift\+A/);
+});
+
 test('standalone package and UI contain no Overwolf runtime dependency', () => {
   const packageJson = JSON.parse(read('package.json'));
   const main = read('src/main/index.js');
