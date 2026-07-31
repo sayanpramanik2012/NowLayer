@@ -278,6 +278,20 @@ kbd { border: 1px solid rgba(255, 255, 255, 0.14); border-bottom-width: 2px; bor
 .tip-card strong { color: #d9dae1; }
 
 .two-column { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(240px, 0.8fr); gap: 16px; }
+.timer-grid { margin-top: 16px; }
+.timer-grid .panel { min-height: 310px; }
+.timer-grid h2 { margin-top: 7px; font-size: 30px; font-variant-numeric: tabular-nums; }
+.timer-inputs, .button-row { display: flex; gap: 8px; margin-top: 16px; }
+.timer-inputs label, .time-input { display: grid; gap: 5px; color: var(--muted); font-size: 9px; }
+.timer-inputs input, .time-input input { border: 1px solid var(--line); border-radius: 8px; padding: 8px; color: var(--text); background: #0d0d13; }
+.timer-inputs input { width: 88px; }
+.time-input { margin-top: 17px; }
+.time-input input { width: 140px; }
+.checkbox-line { display: flex; align-items: center; gap: 9px; margin-top: 16px; color: #d8d9e1; font-size: 10px; }
+.checkbox-line input { width: 16px; height: 16px; accent-color: var(--accent); }
+.link-button { display: inline-block; margin-top: 14px; border: 0; padding: 0; color: #f87183; background: transparent; cursor: pointer; font-size: 10px; font-weight: 700; }
+.file-label { display: block; margin-top: 5px; overflow: hidden; color: var(--muted); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.dismiss-alert-button { display: block; margin-top: 14px; }
 .panel { border-radius: 15px; padding: 20px; }
 .panel h2 { font-size: 14px; }
 .panel > p { margin: 7px 0 0; color: var(--muted); font-size: 10px; line-height: 1.5; }

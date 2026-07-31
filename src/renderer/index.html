@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; img-src 'self' data:; media-src 'self' blob:; style-src 'self'; script-src 'self';"
+      content="default-src 'self'; img-src 'self' data:; media-src 'self' blob: file:; style-src 'self'; script-src 'self';"
     >
     <title>NowLayer</title>
     <link rel="stylesheet" href="styles.css">
@@ -25,6 +25,8 @@
             <svg class="material-icon"><use id="pipPlayIcon" href="../assets/material-icons.svg#pause"></use></svg>
           </button>
         </div>
+        <div id="utilityBar" class="utility-bar"><span id="clockDisplay"></span><span id="timerDisplay"></span></div>
+        <div id="alertOverlay" class="alert-overlay" hidden><strong id="alertTitle">Timer finished</strong><span id="alertMessage">Time is up.</span><button id="dismissAlertButton" type="button">Dismiss</button></div>
 
         <div id="artwork" class="artwork" aria-hidden="true">
           <img id="artworkImage" alt="">

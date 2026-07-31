@@ -69,3 +69,18 @@ test('first-run placement fields are sanitized', () => {
   });
   assert.equal(result.onboardingComplete, true);
 });
+
+test('clock, timer, and alarm preferences are persisted safely', () => {
+  const result = sanitizeSettings({
+    utilities: {
+      showClock: true,
+      timer: { pausedRemaining: 90, soundEnabled: true },
+      alarm: { enabled: true, time: '06:45', soundEnabled: false },
+    },
+  });
+  assert.equal(result.utilities.showClock, true);
+  assert.equal(result.utilities.timer.pausedRemaining, 90);
+  assert.equal(result.utilities.timer.soundEnabled, true);
+  assert.equal(result.utilities.alarm.time, '06:45');
+  assert.equal(result.utilities.alarm.enabled, true);
+});

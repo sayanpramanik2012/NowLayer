@@ -20,6 +20,7 @@
         <nav aria-label="NowLayer sections">
           <button class="nav-button is-active" type="button" data-view="home"><svg class="material-icon"><use href="../assets/material-icons.svg#home"></use></svg>Home</button>
           <button class="nav-button" type="button" data-view="video"><svg class="material-icon"><use href="../assets/material-icons.svg#pip"></use></svg>Video PiP</button>
+          <button class="nav-button" type="button" data-view="timers"><svg class="material-icon"><use href="../assets/material-icons.svg#settings"></use></svg>Clock & timers</button>
           <button class="nav-button" type="button" data-view="position"><svg class="material-icon"><use href="../assets/material-icons.svg#open-with"></use></svg>Position</button>
           <button class="nav-button" type="button" data-view="settings"><svg class="material-icon"><use href="../assets/material-icons.svg#settings"></use></svg>Settings</button>
           <button class="nav-button" type="button" data-view="help"><svg class="material-icon"><use href="../assets/material-icons.svg#help"></use></svg>Help & diagnostics</button>
@@ -111,6 +112,31 @@
               <h2>Preview</h2>
               <div id="miniPreview" class="mini-preview"><span>N</span><div><strong id="previewTitle">Nothing playing</strong><small id="previewArtist">NowLayer preview</small></div></div>
               <p>Changes apply immediately to the standalone overlay.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="view" data-view-panel="timers">
+          <header class="page-header"><div><p class="eyebrow">KEEP TIME IN GAME</p><h1>Clock, timer & alarm.</h1></div></header>
+          <article class="panel settings-list">
+            <label class="setting-row"><div><strong>Show clock on overlay</strong><span>A small local time display stays visible in music and Video PiP mode.</span></div><input id="clockToggle" type="checkbox" role="switch"></label>
+            <label class="setting-row"><div><strong>Launch when Windows starts</strong><span>Keep NowLayer ready in the system tray after you sign in.</span></div><input id="startupToggle" type="checkbox" role="switch"></label>
+          </article>
+          <div class="two-column timer-grid">
+            <article class="panel">
+              <p class="eyebrow">COUNTDOWN</p><h2 id="timerReadout">00:00</h2><p>At zero, NowLayer shakes. Enable sound for an audible alert.</p>
+              <div class="timer-inputs"><label>Minutes<input id="timerMinutes" type="number" min="0" max="1440" value="5"></label><label>Seconds<input id="timerSeconds" type="number" min="0" max="59" value="0"></label></div>
+              <div class="button-row"><button id="timerStartButton" class="primary-button" type="button">Start timer</button><button id="timerPauseButton" class="secondary-button" type="button">Pause</button><button id="timerResetButton" class="secondary-button" type="button">Reset</button></div>
+              <label class="checkbox-line"><input id="timerSoundToggle" type="checkbox"> Play a sound when finished</label>
+              <button id="timerSoundButton" class="link-button" type="button">Choose custom timer sound</button><span id="timerSoundLabel" class="file-label">Default tone</span>
+            </article>
+            <article class="panel">
+              <p class="eyebrow">DAILY ALARM</p><h2 id="alarmReadout">Off</h2><p>Shows an overlay alert at the selected local time. Dismiss from Control Center or <kbd>Ctrl + Shift + A</kbd>.</p>
+              <label class="time-input">Alarm time<input id="alarmTime" type="time" value="07:00"></label>
+              <label class="checkbox-line"><input id="alarmEnabledToggle" type="checkbox"> Enable daily alarm</label>
+              <label class="checkbox-line"><input id="alarmSoundToggle" type="checkbox"> Play sound until dismissed</label>
+              <button id="alarmSoundButton" class="link-button" type="button">Choose custom alarm sound</button><span id="alarmSoundLabel" class="file-label">Default tone</span>
+              <button id="dismissActiveAlertButton" class="secondary-button dismiss-alert-button" type="button" hidden>Dismiss active alert</button>
             </article>
           </div>
         </section>

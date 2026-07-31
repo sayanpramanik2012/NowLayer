@@ -29,6 +29,11 @@ const DEFAULT_SETTINGS = Object.freeze({
   opacity: 0.94,
   anchor: 'bottom-right',
   margin: 24,
+  utilities: {
+    showClock: false,
+    timer: { active: false, endAt: 0, pausedRemaining: 0, soundEnabled: false, soundPath: '' },
+    alarm: { enabled: false, time: '07:00', soundEnabled: false, soundPath: '', lastFiredMinute: '' },
+  },
   bounds: {
     x: null,
     y: null,
@@ -73,6 +78,7 @@ function sanitizeSettings(candidate = {}) {
       0,
       96,
     ),
+    utilities: require('./timekeeper').normalizeUtilities(candidate.utilities),
     bounds: {
       x: Number.isFinite(sourceBounds.x) ? Math.round(sourceBounds.x) : null,
       y: Number.isFinite(sourceBounds.y) ? Math.round(sourceBounds.y) : null,

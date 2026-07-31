@@ -10,6 +10,12 @@ contextBridge.exposeInMainWorld('nowLayer', Object.freeze({
   reportVideoError: (message) => ipcRenderer.invoke('nowlayer:video-error', message),
   copyDiagnostics: () => ipcRenderer.invoke('nowlayer:copy-diagnostics'),
   resetSettings: () => ipcRenderer.invoke('nowlayer:reset-settings'),
+  startTimer: (seconds) => ipcRenderer.invoke('nowlayer:timer-start', seconds),
+  pauseTimer: () => ipcRenderer.invoke('nowlayer:timer-pause'),
+  resetTimer: () => ipcRenderer.invoke('nowlayer:timer-reset'),
+  dismissAlert: () => ipcRenderer.invoke('nowlayer:alert-dismiss'),
+  chooseAlertSound: () => ipcRenderer.invoke('nowlayer:choose-alert-sound'),
+  setStartup: (enabled) => ipcRenderer.invoke('nowlayer:set-startup', enabled),
   onState: (callback) => {
     const listener = (_event, state) => callback(state);
     ipcRenderer.on('nowlayer:state', listener);
