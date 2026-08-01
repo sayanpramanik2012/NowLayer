@@ -164,14 +164,17 @@ class OverlayManager extends EventEmitter {
   applyUtilityWindow() {
     const utilities = this.settings.utilities || {};
     const timer = utilities.timer || {};
-    const shouldShow = this.settings.visible && utilities.displayMode === 'separate'
-      && (utilities.showClock || timer.active || timer.pausedRemaining > 0);
+    const shouldShow = utilities.displayMode === 'separate' && utilities.widgetVisible !== false
+      && (utilities.showClock || utilities.showTimer !== false);
     if (!shouldShow) {
       if (this.utilityWindow && !this.utilityWindow.isDestroyed()) this.utilityWindow.hide();
       return;
     }
     const window = this.createUtilityWindow();
     if (!window || window.isDestroyed()) return;
+    const widgetWidth = (utilities.showClock && utilities.showTimer === false)
+      || (!utilities.showClock && utilities.showTimer !== false) ? 150 : 228;
+    if (typeof window.setSize === 'function') window.setSize(widgetWidth, 76, false);
     this.keepUtilityOnTop();
     window.setIgnoreMouseEvents(this.settings.locked, { forward: true });
     if (typeof window.setFocusable === 'function') window.setFocusable(!this.settings.locked);

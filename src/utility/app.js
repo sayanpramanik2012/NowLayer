@@ -16,10 +16,12 @@ function render(nextState) {
   state = nextState;
   const utilities = state.utilities || {};
   const timer = utilities.timer || {};
-  elements.clock.textContent = utilities.showClock ? new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(new Date()) : '--:--';
+  elements.clock.textContent = utilities.showClock ? new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(new Date()) : '';
   elements.timer.textContent = formatDuration(remaining(timer));
   elements.timerLabel.textContent = timer.active ? 'COUNTDOWN' : 'TIMER';
   elements.alert.hidden = !utilities.alert;
+  elements.widget.classList.toggle('clock-only', utilities.showClock && utilities.showTimer === false);
+  elements.widget.classList.toggle('timer-only', !utilities.showClock && utilities.showTimer !== false);
   elements.widget.classList.toggle('is-locked', state.settings?.locked !== false);
 }
 

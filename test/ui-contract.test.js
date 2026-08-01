@@ -39,6 +39,7 @@ test('video PiP controls and bundled Material icon sprite are present', () => {
   const controlHtml = read('src/control/index.html');
   const overlayHtml = read('src/renderer/index.html');
   const overlayStyles = read('src/renderer/styles.css');
+  const utilityStyles = read('src/utility/styles.css');
   const preload = read('src/preload/index.js');
   const icons = read('src/assets/material-icons.svg');
   assert.match(controlHtml, /data-view-panel="video"/);
@@ -56,19 +57,26 @@ test('timer, alarm, clock, and startup controls are available through the safe b
   const control = read('src/control/index.html');
   const overlay = read('src/renderer/index.html');
   const utility = read('src/utility/index.html');
+  const overlayStyles = read('src/renderer/styles.css');
+  const utilityStyles = read('src/utility/styles.css');
   const preload = read('src/preload/index.js');
   const main = read('src/main/index.js');
   assert.match(control, /data-view-panel="timers"/);
   assert.match(control, /id="startupToggle"/);
   assert.match(control, /id="alarmTime"/);
   assert.match(control, /id="utilityDisplayMode"/);
+  assert.match(control, /id="showTimerToggle"/);
+  assert.match(control, /id="visibilityHotkeyInput"/);
   assert.match(overlay, /id="alertOverlay"/);
   assert.match(overlay, /dismissAlertButton/);
+  assert.match(overlayStyles, /\.alert-overlay\[hidden\]\s*\{\s*display:\s*none;/);
+  assert.match(utilityStyles, /\.alert\[hidden\]\s*\{\s*display:\s*none;/);
   assert.match(utility, /id="timer"/);
   assert.match(preload, /startTimer/);
   assert.match(preload, /setStartup/);
   assert.match(main, /setLoginItemSettings/);
-  assert.match(main, /Ctrl\+Shift\+A/);
+  assert.match(main, /dismissAlert/);
+  assert.match(main, /registerDesktopHotkeys\(requested\)/);
 });
 
 test('standalone package and UI contain no Overwolf runtime dependency', () => {

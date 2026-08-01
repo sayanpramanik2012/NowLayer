@@ -16,6 +16,7 @@ const {
 } = require('electron');
 const {
   DEFAULT_SETTINGS,
+  DEFAULT_HOTKEYS,
   loadSettings,
   sanitizeSettings,
   saveSettings,
@@ -85,9 +86,7 @@ function currentState() {
       isPackaged: app.isPackaged,
       startupEnabled: process.platform === 'win32' ? app.getLoginItemSettings().openAtLogin : false,
       hotkeys: {
-        visibility: 'Ctrl+Shift+M',
-        lock: 'Ctrl+Shift+L',
-        dismissAlert: 'Ctrl+Shift+A',
+        ...overlayManager.settings.hotkeys,
       },
     },
   };
@@ -271,11 +270,21 @@ ipcMain.handle('nowlayer:set-setting', (_event, key, value) => {
     'opacity',
     'anchor',
     'utilities',
+    'hotkeys',
   ]);
   if (!allowed.has(key)) throw new Error('Unsupported setting.');
   if (key === 'utilities') {
     timekeeper.update(value);
     return overlayManager.settings;
+  }
+  if (key === 'hotkeys') {
+    const requested = sanitizeSettings({ ...overlayManager.settings, hotkeys: value }).hotkeys;
+    const previous = overlayManager.settings.hotkeys;
+    if (!registerDesktopHotkeys(requested)) {
+      registerDesktopHotkeys(previous);
+      throw new Error('That shortcut is unavailable. Choose another combination.');
+    }
+    return overlayManager.updateSettings({ hotkeys: requested });
   }
   return overlayManager.updateSettings({ [key]: value });
 });
@@ -364,17 +373,21 @@ ipcMain.handle('nowlayer:reset-settings', () => {
   return overlayManager.settings;
 });
 
-function registerDesktopHotkeys() {
-  const visibilityRegistered = globalShortcut.register('CommandOrControl+Shift+M', () => {
+function registerDesktopHotkeys(hotkeys = DEFAULT_HOTKEYS) {
+  globalShortcut.unregisterAll();
+  const visibilityRegistered = globalShortcut.register(hotkeys.visibility, () => {
     overlayManager.toggleVisible();
   });
-  const lockRegistered = globalShortcut.register('CommandOrControl+Shift+L', () => {
+  const lockRegistered = globalShortcut.register(hotkeys.lock, () => {
     overlayManager.toggleLocked();
   });
-  const dismissRegistered = globalShortcut.register('CommandOrControl+Shift+A', () => timekeeper.dismissAlert());
-  if (!visibilityRegistered) console.warn('[hotkey] Ctrl+Shift+M is already in use.');
-  if (!lockRegistered) console.warn('[hotkey] Ctrl+Shift+L is already in use.');
-  if (!dismissRegistered) console.warn('[hotkey] Ctrl+Shift+A is already in use.');
+  const dismissRegistered = globalShortcut.register(hotkeys.dismissAlert, () => timekeeper.dismissAlert());
+  if (!visibilityRegistered || !lockRegistered || !dismissRegistered) {
+    console.warn('[hotkey] One or more shortcuts are already in use.');
+    globalShortcut.unregisterAll();
+    return false;
+  }
+  return true;
 }
 
 const hasSingleInstanceLock = app.requestSingleInstanceLock();
@@ -403,7 +416,7 @@ if (!hasSingleInstanceLock) {
     overlayManager.createDesktopWindow();
     if (!smokeTestMode) createTray();
     createControlWindow({ show: !smokeTestMode });
-    registerDesktopHotkeys();
+    registerDesktopHotkeys(overlayManager.settings.hotkeys);
     mediaMonitor.start();
 
     if (smokeTestMode) {

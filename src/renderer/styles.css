@@ -153,6 +153,7 @@ button {
 .overlay:not(.is-video) .utility-bar { top: 10px; right: 11px; }
 .overlay:not(.is-video) .status-cluster { margin-right: 0; }
 .alert-overlay { position: absolute; z-index: 10; inset: 8px; display: grid; place-content: center; justify-items: center; gap: 7px; border: 1px solid rgba(255,79,100,.72); border-radius: 14px; color: #fff; background: rgba(39, 10, 18, .96); text-align: center; -webkit-app-region: no-drag; animation: alert-shake .48s ease-in-out infinite alternate; }
+.alert-overlay[hidden] { display: none; }
 .alert-overlay strong { font-size: 15px; }
 .alert-overlay span { color: #fecdd3; font-size: 10px; }
 .alert-overlay button { border: 0; border-radius: 8px; padding: 6px 10px; color: white; background: #ef4760; cursor: pointer; font-size: 10px; font-weight: 700; }

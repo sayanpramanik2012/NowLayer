@@ -125,6 +125,8 @@
             <article class="panel">
               <p class="eyebrow">COUNTDOWN</p><h2 id="timerReadout">00:00</h2><p>At zero, NowLayer shakes. Enable sound for an audible alert.</p>
               <label class="time-input">Time & timer display<select id="utilityDisplayMode"><option value="embedded">Inside the media overlay</option><option value="separate">Separate floating widget</option></select></label>
+              <label class="checkbox-line"><input id="utilityVisibleToggle" type="checkbox"> Show the time & timer widget</label>
+              <label class="checkbox-line"><input id="showTimerToggle" type="checkbox"> Show timer beside the clock</label>
               <div class="timer-inputs"><label>Minutes<input id="timerMinutes" type="number" min="0" max="1440" value="5"></label><label>Seconds<input id="timerSeconds" type="number" min="0" max="59" value="0"></label></div>
               <div class="button-row"><button id="timerStartButton" class="primary-button" type="button">Start timer</button><button id="timerPauseButton" class="secondary-button" type="button">Pause</button><button id="timerResetButton" class="secondary-button" type="button">Reset</button></div>
               <label class="checkbox-line"><input id="timerSoundToggle" type="checkbox"> Play a sound when finished</label>
@@ -152,7 +154,7 @@
             <div class="setting-row"><div><strong>PiP button position</strong><span>Choose which corner holds the floating play/pause button.</span></div><select id="pipControlPositionSelect" aria-label="PiP button position"><option value="top-right">Top right</option><option value="top-left">Top left</option><option value="bottom-right">Bottom right</option><option value="bottom-left">Bottom left</option></select></div>
             <label class="setting-row slider-row"><div><strong>Panel opacity</strong><span>Adjust the overlay background from subtle to solid.</span></div><div class="slider-wrap"><input id="opacitySlider" type="range" min="45" max="100" step="1"><output id="opacityValue">94%</output></div></label>
           </article>
-          <article class="panel hotkey-panel"><h2>Hotkeys</h2><div><span>Show / hide overlay</span><kbd>Ctrl + Shift + M</kbd></div><div><span>Lock / unlock interaction</span><kbd>Ctrl + Shift + L</kbd></div></article>
+          <article class="panel hotkey-panel"><h2>Your hotkeys</h2><p>Use combinations such as <kbd>Ctrl + Shift + M</kbd>. NowLayer checks whether a shortcut is already taken.</p><label><span>Show / hide media overlay</span><input id="visibilityHotkeyInput" class="hotkey-input" type="text" spellcheck="false"></label><label><span>Lock / unlock interaction</span><input id="lockHotkeyInput" class="hotkey-input" type="text" spellcheck="false"></label><label><span>Dismiss timer or alarm</span><input id="dismissHotkeyInput" class="hotkey-input" type="text" spellcheck="false"></label><p id="hotkeyMessage" class="copy-confirmation" role="status"></p></article>
           <button id="resetButton" class="danger-button" type="button">Reset NowLayer settings</button>
         </section>
 

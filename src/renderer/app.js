@@ -117,7 +117,7 @@ function renderUtilities() {
   const timer = utilities.timer ?? {};
   const embedded = utilities.displayMode !== 'separate';
   elements.clockDisplay.textContent = embedded && utilities.showClock ? new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(new Date()) : '';
-  elements.timerDisplay.textContent = embedded && (timer.active || timer.pausedRemaining) ? `T ${formatCountdown(timerRemaining(timer))}` : '';
+  elements.timerDisplay.textContent = embedded && utilities.showTimer !== false && (timer.active || timer.pausedRemaining) ? `T ${formatCountdown(timerRemaining(timer))}` : '';
   elements.overlay.classList.toggle('has-utilities', Boolean(elements.clockDisplay.textContent || elements.timerDisplay.textContent));
 }
 

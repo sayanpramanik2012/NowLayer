@@ -23,6 +23,8 @@ function normalizeUtilities(candidate = {}) {
   const alarm = candidate.alarm || {};
   return {
     showClock: candidate.showClock === true,
+    showTimer: candidate.showTimer !== false,
+    widgetVisible: candidate.widgetVisible !== false,
     displayMode: candidate.displayMode === 'separate' ? 'separate' : 'embedded',
     timer: {
       active: timer.active === true && Number.isFinite(timer.endAt) && timer.endAt > 0,
