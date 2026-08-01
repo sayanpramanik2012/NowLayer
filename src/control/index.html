@@ -124,6 +124,7 @@
           <div class="two-column timer-grid">
             <article class="panel">
               <p class="eyebrow">COUNTDOWN</p><h2 id="timerReadout">00:00</h2><p>At zero, NowLayer shakes. Enable sound for an audible alert.</p>
+              <label class="time-input">Time & timer display<select id="utilityDisplayMode"><option value="embedded">Inside the media overlay</option><option value="separate">Separate floating widget</option></select></label>
               <div class="timer-inputs"><label>Minutes<input id="timerMinutes" type="number" min="0" max="1440" value="5"></label><label>Seconds<input id="timerSeconds" type="number" min="0" max="59" value="0"></label></div>
               <div class="button-row"><button id="timerStartButton" class="primary-button" type="button">Start timer</button><button id="timerPauseButton" class="secondary-button" type="button">Pause</button><button id="timerResetButton" class="secondary-button" type="button">Reset</button></div>
               <label class="checkbox-line"><input id="timerSoundToggle" type="checkbox"> Play a sound when finished</label>

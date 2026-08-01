@@ -74,11 +74,13 @@ test('clock, timer, and alarm preferences are persisted safely', () => {
   const result = sanitizeSettings({
     utilities: {
       showClock: true,
+      displayMode: 'separate',
       timer: { pausedRemaining: 90, soundEnabled: true },
       alarm: { enabled: true, time: '06:45', soundEnabled: false },
     },
   });
   assert.equal(result.utilities.showClock, true);
+  assert.equal(result.utilities.displayMode, 'separate');
   assert.equal(result.utilities.timer.pausedRemaining, 90);
   assert.equal(result.utilities.timer.soundEnabled, true);
   assert.equal(result.utilities.alarm.time, '06:45');

@@ -49,6 +49,7 @@ const elements = {
   errorPanel: document.getElementById('errorPanel'),
   mediaError: document.getElementById('mediaError'),
   clockToggle: document.getElementById('clockToggle'),
+  utilityDisplayMode: document.getElementById('utilityDisplayMode'),
   startupToggle: document.getElementById('startupToggle'),
   timerReadout: document.getElementById('timerReadout'),
   timerMinutes: document.getElementById('timerMinutes'),
@@ -239,6 +240,7 @@ function render(nextState) {
   if (document.activeElement !== elements.opacitySlider) elements.opacitySlider.value = String(opacityPercent);
   elements.opacityValue.textContent = `${opacityPercent}%`;
   elements.clockToggle.checked = utilities.showClock === true;
+  elements.utilityDisplayMode.value = utilities.displayMode || 'embedded';
   elements.startupToggle.checked = appInfo.startupEnabled === true;
   elements.timerReadout.textContent = formatDuration(timerRemaining(utilities.timer));
   elements.timerPauseButton.disabled = utilities.timer?.active !== true;
@@ -351,6 +353,7 @@ elements.opacitySlider.addEventListener('input', () => {
   }, 80);
 });
 elements.clockToggle.addEventListener('change', () => updateUtilities({ showClock: elements.clockToggle.checked }));
+elements.utilityDisplayMode.addEventListener('change', () => updateUtilities({ displayMode: elements.utilityDisplayMode.value }));
 elements.startupToggle.addEventListener('change', async () => {
   try {
     const enabled = await window.nowLayer.setStartup(elements.startupToggle.checked);

@@ -37,6 +37,7 @@ if (smokeTestMode) {
 }
 
 const rendererPath = path.join(__dirname, '..', 'renderer', 'index.html');
+const utilityRendererPath = path.join(__dirname, '..', 'utility', 'index.html');
 const controlPath = path.join(__dirname, '..', 'control', 'index.html');
 const preloadPath = path.join(__dirname, '..', 'preload', 'index.js');
 const appIconPath = path.join(__dirname, '..', 'assets', 'app-icon.png');
@@ -53,6 +54,7 @@ const overlayManager = new OverlayManager({
   BrowserWindow,
   screen,
   rendererPath,
+  utilityRendererPath,
   preloadPath,
 });
 
