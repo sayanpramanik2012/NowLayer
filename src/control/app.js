@@ -50,6 +50,8 @@ const elements = {
   mediaError: document.getElementById('mediaError'),
   clockToggle: document.getElementById('clockToggle'),
   utilityDisplayMode: document.getElementById('utilityDisplayMode'),
+  utilityVisibleToggle: document.getElementById('utilityVisibleToggle'),
+  showTimerToggle: document.getElementById('showTimerToggle'),
   startupToggle: document.getElementById('startupToggle'),
   timerReadout: document.getElementById('timerReadout'),
   timerMinutes: document.getElementById('timerMinutes'),
@@ -67,6 +69,10 @@ const elements = {
   alarmSoundButton: document.getElementById('alarmSoundButton'),
   alarmSoundLabel: document.getElementById('alarmSoundLabel'),
   dismissActiveAlertButton: document.getElementById('dismissActiveAlertButton'),
+  visibilityHotkeyInput: document.getElementById('visibilityHotkeyInput'),
+  lockHotkeyInput: document.getElementById('lockHotkeyInput'),
+  dismissHotkeyInput: document.getElementById('dismissHotkeyInput'),
+  hotkeyMessage: document.getElementById('hotkeyMessage'),
 };
 
 const iconPath = '../assets/material-icons.svg';
@@ -241,6 +247,9 @@ function render(nextState) {
   elements.opacityValue.textContent = `${opacityPercent}%`;
   elements.clockToggle.checked = utilities.showClock === true;
   elements.utilityDisplayMode.value = utilities.displayMode || 'embedded';
+  elements.utilityVisibleToggle.checked = utilities.widgetVisible !== false;
+  elements.showTimerToggle.checked = utilities.showTimer !== false;
+  elements.utilityVisibleToggle.disabled = utilities.displayMode !== 'separate';
   elements.startupToggle.checked = appInfo.startupEnabled === true;
   elements.timerReadout.textContent = formatDuration(timerRemaining(utilities.timer));
   elements.timerPauseButton.disabled = utilities.timer?.active !== true;
@@ -252,6 +261,10 @@ function render(nextState) {
   elements.alarmSoundLabel.textContent = utilities.alarm?.soundPath ? utilities.alarm.soundPath.split(/[\\/]/).at(-1) : 'Default tone';
   elements.alarmReadout.textContent = utilities.alarm?.enabled ? `Daily at ${utilities.alarm.time}` : 'Off';
   elements.dismissActiveAlertButton.hidden = !utilities.alert;
+  const hotkeys = settings.hotkeys || {};
+  if (document.activeElement !== elements.visibilityHotkeyInput) elements.visibilityHotkeyInput.value = hotkeys.visibility || '';
+  if (document.activeElement !== elements.lockHotkeyInput) elements.lockHotkeyInput.value = hotkeys.lock || '';
+  if (document.activeElement !== elements.dismissHotkeyInput) elements.dismissHotkeyInput.value = hotkeys.dismissAlert || '';
 
   elements.mediaStatus.textContent = available ? (playing ? 'Playing now' : 'Media paused') : 'Waiting for media';
   elements.mediaDetail.textContent = available
@@ -354,6 +367,8 @@ elements.opacitySlider.addEventListener('input', () => {
 });
 elements.clockToggle.addEventListener('change', () => updateUtilities({ showClock: elements.clockToggle.checked }));
 elements.utilityDisplayMode.addEventListener('change', () => updateUtilities({ displayMode: elements.utilityDisplayMode.value }));
+elements.utilityVisibleToggle.addEventListener('change', () => updateUtilities({ widgetVisible: elements.utilityVisibleToggle.checked }));
+elements.showTimerToggle.addEventListener('change', () => updateUtilities({ showTimer: elements.showTimerToggle.checked }));
 elements.startupToggle.addEventListener('change', async () => {
   try {
     const enabled = await window.nowLayer.setStartup(elements.startupToggle.checked);
@@ -380,6 +395,18 @@ elements.alarmSoundButton.addEventListener('click', async () => {
   if (result) updateUtilities({ alarm: { soundPath: result.path } });
 });
 elements.dismissActiveAlertButton.addEventListener('click', () => window.nowLayer.dismissAlert());
+for (const [input, key] of [[elements.visibilityHotkeyInput, 'visibility'], [elements.lockHotkeyInput, 'lock'], [elements.dismissHotkeyInput, 'dismissAlert']]) {
+  input.addEventListener('change', async () => {
+    try {
+      const settings = await window.nowLayer.setSetting('hotkeys', { ...(state?.settings?.hotkeys || {}), [key]: input.value });
+      render({ ...state, settings });
+      elements.hotkeyMessage.textContent = 'Shortcut saved.';
+    } catch (error) {
+      elements.hotkeyMessage.textContent = error.message || 'Could not save that shortcut.';
+      render(state);
+    }
+  });
+}
 elements.quickPrevious.addEventListener('click', () => mediaAction('previous'));
 elements.quickPlay.addEventListener('click', () => mediaAction('play-pause'));
 elements.quickNext.addEventListener('click', () => mediaAction('next'));

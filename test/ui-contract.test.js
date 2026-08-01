@@ -65,6 +65,8 @@ test('timer, alarm, clock, and startup controls are available through the safe b
   assert.match(control, /id="startupToggle"/);
   assert.match(control, /id="alarmTime"/);
   assert.match(control, /id="utilityDisplayMode"/);
+  assert.match(control, /id="showTimerToggle"/);
+  assert.match(control, /id="visibilityHotkeyInput"/);
   assert.match(overlay, /id="alertOverlay"/);
   assert.match(overlay, /dismissAlertButton/);
   assert.match(overlayStyles, /\.alert-overlay\[hidden\]\s*\{\s*display:\s*none;/);
@@ -73,7 +75,8 @@ test('timer, alarm, clock, and startup controls are available through the safe b
   assert.match(preload, /startTimer/);
   assert.match(preload, /setStartup/);
   assert.match(main, /setLoginItemSettings/);
-  assert.match(main, /Ctrl\+Shift\+A/);
+  assert.match(main, /dismissAlert/);
+  assert.match(main, /registerDesktopHotkeys\(requested\)/);
 });
 
 test('standalone package and UI contain no Overwolf runtime dependency', () => {

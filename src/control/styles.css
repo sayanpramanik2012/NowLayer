@@ -369,6 +369,9 @@ select:disabled { cursor: default; opacity: 0.42; }
 .hotkey-panel { margin-top: 14px; }
 .hotkey-panel > div { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; color: var(--muted); font-size: 10px; }
 .hotkey-panel kbd { padding: 5px 8px; }
+.hotkey-panel > p { margin: 7px 0 0; color: var(--muted); font-size: 9px; line-height: 1.5; }
+.hotkey-panel label { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-top: 12px; color: var(--muted); font-size: 10px; }
+.hotkey-input { width: 190px; border: 1px solid var(--line); border-radius: 8px; padding: 8px 9px; color: var(--text); background: #0d0d13; font: 10px "Cascadia Mono", Consolas, monospace; }
 
 .checklist ol { margin: 13px 0 0; padding-left: 20px; color: var(--muted); font-size: 10px; line-height: 1.8; }
 .checklist strong { color: #d8d9e0; }

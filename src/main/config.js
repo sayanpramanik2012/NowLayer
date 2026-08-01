@@ -19,6 +19,33 @@ const ALLOWED_PIP_CONTROL_POSITIONS = new Set([
   'bottom-right',
 ]);
 
+const DEFAULT_HOTKEYS = Object.freeze({
+  visibility: 'CommandOrControl+Shift+M',
+  lock: 'CommandOrControl+Shift+L',
+  dismissAlert: 'CommandOrControl+Shift+A',
+});
+
+function sanitizeHotkey(value, fallback) {
+  const candidate = String(value || '').trim().replace(/^Ctrl\+/i, 'CommandOrControl+');
+  if (candidate.length < 3 || candidate.length > 64) return fallback;
+  if (!/^(?:(?:CommandOrControl|Alt|Shift)\+)+(?:[A-Z0-9]|F(?:[1-9]|1[0-2]))$/i.test(candidate)) return fallback;
+  return candidate;
+}
+
+function sanitizeHotkeys(candidate = {}) {
+  const result = {
+    visibility: sanitizeHotkey(candidate.visibility, DEFAULT_HOTKEYS.visibility),
+    lock: sanitizeHotkey(candidate.lock, DEFAULT_HOTKEYS.lock),
+    dismissAlert: sanitizeHotkey(candidate.dismissAlert, DEFAULT_HOTKEYS.dismissAlert),
+  };
+  const used = new Set();
+  for (const key of Object.keys(result)) {
+    if (used.has(result[key].toLowerCase())) result[key] = DEFAULT_HOTKEYS[key];
+    used.add(result[key].toLowerCase());
+  }
+  return result;
+}
+
 const DEFAULT_SETTINGS = Object.freeze({
   onboardingComplete: false,
   visible: true,
@@ -29,8 +56,11 @@ const DEFAULT_SETTINGS = Object.freeze({
   opacity: 0.94,
   anchor: 'bottom-right',
   margin: 24,
+  hotkeys: DEFAULT_HOTKEYS,
   utilities: {
     showClock: false,
+    showTimer: true,
+    widgetVisible: true,
     displayMode: 'embedded',
     timer: { active: false, endAt: 0, pausedRemaining: 0, soundEnabled: false, soundPath: '' },
     alarm: { enabled: false, time: '07:00', soundEnabled: false, soundPath: '', lastFiredMinute: '' },
@@ -79,6 +109,7 @@ function sanitizeSettings(candidate = {}) {
       0,
       96,
     ),
+    hotkeys: sanitizeHotkeys(candidate.hotkeys),
     utilities: require('./timekeeper').normalizeUtilities(candidate.utilities),
     bounds: {
       x: Number.isFinite(sourceBounds.x) ? Math.round(sourceBounds.x) : null,
@@ -150,8 +181,10 @@ module.exports = {
   ALLOWED_ANCHORS,
   ALLOWED_PIP_CONTROL_POSITIONS,
   DEFAULT_SETTINGS,
+  DEFAULT_HOTKEYS,
   calculateAnchoredBounds,
   loadSettings,
   sanitizeSettings,
+  sanitizeHotkeys,
   saveSettings,
 };
