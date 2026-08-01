@@ -8,4 +8,5 @@ html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background:
 small { display: block; color: #a7a8b3; font-size: 7px; font-weight: 800; letter-spacing: .13em; }
 strong { display: block; margin-top: 5px; font-size: 19px; font-variant-numeric: tabular-nums; }
 .alert { position: absolute; z-index: 2; inset: 5px; display: grid; place-items: center; border: 1px solid rgba(255,79,100,.8); border-radius: 11px; color: #fff; background: rgba(97,17,31,.96); font-size: 12px; font-weight: 800; letter-spacing: .08em; animation: shake .45s ease-in-out infinite alternate; }
+.alert[hidden] { display: none; }
 @keyframes shake { from { transform: translateX(-2px); } to { transform: translateX(2px); } }
