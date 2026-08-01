@@ -90,7 +90,7 @@ class OverlayManager extends EventEmitter {
     if (this.utilityWindow && !this.utilityWindow.isDestroyed()) return this.utilityWindow;
     if (!this.utilityRendererPath) return null;
     const display = this.screen.getDisplayNearestPoint({ x: 0, y: 0 });
-    const bounds = { width: 228, height: 76, x: display.workArea.x + display.workArea.width - 252, y: display.workArea.y + 24 };
+    const bounds = { width: 242, height: 68, x: display.workArea.x + display.workArea.width - 266, y: display.workArea.y + 24 };
     const window = new this.BrowserWindow({
       ...bounds,
       title: 'NowLayer Time & Timer',
@@ -173,8 +173,8 @@ class OverlayManager extends EventEmitter {
     const window = this.createUtilityWindow();
     if (!window || window.isDestroyed()) return;
     const widgetWidth = (utilities.showClock && utilities.showTimer === false)
-      || (!utilities.showClock && utilities.showTimer !== false) ? 150 : 228;
-    if (typeof window.setSize === 'function') window.setSize(widgetWidth, 76, false);
+      || (!utilities.showClock && utilities.showTimer !== false) ? 172 : 242;
+    if (typeof window.setSize === 'function') window.setSize(widgetWidth, 68, false);
     this.keepUtilityOnTop();
     window.setIgnoreMouseEvents(this.settings.locked, { forward: true });
     if (typeof window.setFocusable === 'function') window.setFocusable(!this.settings.locked);

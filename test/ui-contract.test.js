@@ -71,7 +71,10 @@ test('timer, alarm, clock, and startup controls are available through the safe b
   assert.match(overlay, /dismissAlertButton/);
   assert.match(overlayStyles, /\.alert-overlay\[hidden\]\s*\{\s*display:\s*none;/);
   assert.match(utilityStyles, /\.alert\[hidden\]\s*\{\s*display:\s*none;/);
+  assert.match(utilityStyles, /--utility-opacity/);
   assert.match(utility, /id="timer"/);
+  assert.match(utility, /class="brand-mark"/);
+  assert.match(read('src\/utility\/app.js'), /setProperty\('--utility-opacity'/);
   assert.match(preload, /startTimer/);
   assert.match(preload, /setStartup/);
   assert.match(main, /setLoginItemSettings/);

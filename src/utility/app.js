@@ -16,6 +16,8 @@ function render(nextState) {
   state = nextState;
   const utilities = state.utilities || {};
   const timer = utilities.timer || {};
+  const opacity = Math.min(1, Math.max(0.3, Number(state.settings?.opacity) || 0.96));
+  document.documentElement.style.setProperty('--utility-opacity', String(opacity));
   elements.clock.textContent = utilities.showClock ? new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(new Date()) : '';
   elements.timer.textContent = formatDuration(remaining(timer));
   elements.timerLabel.textContent = timer.active ? 'COUNTDOWN' : 'TIMER';
