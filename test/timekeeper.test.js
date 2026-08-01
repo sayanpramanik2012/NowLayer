@@ -40,6 +40,14 @@ test('a saved countdown is cleared at startup and cannot trigger a false alert',
   assert.equal(keeper.getState().alert, null);
 });
 
+test('only a timer started in this app session can create a timer alert', () => {
+  let now = 10_000;
+  const keeper = new Timekeeper({}, { now: () => now });
+  keeper.state.timer = { active: true, endAt: 9_000, pausedRemaining: 1, soundEnabled: false, soundPath: '' };
+  keeper.tick();
+  assert.equal(keeper.getState().alert, null);
+});
+
 test('daily alarm raises only once during its matching minute', () => {
   const time = new Date(2026, 7, 1, 7, 30, 5).getTime();
   const keeper = new Timekeeper({ alarm: { enabled: true, time: '07:30' } }, { now: () => time });
