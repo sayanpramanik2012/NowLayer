@@ -354,6 +354,7 @@ ipcMain.handle('nowlayer:copy-diagnostics', () => {
 
 ipcMain.handle('nowlayer:reset-settings', () => {
   const defaults = sanitizeSettings(DEFAULT_SETTINGS);
+  timekeeper?.update(defaults.utilities);
   overlayManager.setSettings(defaults);
   scheduleSettingsSave(defaults);
   updateTrayMenu();
@@ -394,6 +395,8 @@ if (!hasSingleInstanceLock) {
       overlayManager.updateSettings({ utilities });
       broadcastState();
     });
+    // Persist the clean startup state so a timer cannot be resurrected next time.
+    overlayManager.updateSettings({ utilities: timekeeper.getState() });
     timekeeper.start();
     overlayManager.createDesktopWindow();
     if (!smokeTestMode) createTray();
