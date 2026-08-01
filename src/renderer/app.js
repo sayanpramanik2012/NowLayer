@@ -56,6 +56,7 @@ let captureStream = null;
 let captureRevision = -1;
 let captureRequest = 0;
 let handledAlertAt = 0;
+let dismissedAlertAt = 0;
 let alertAudio = null;
 
 function setIcon(element, name) {
@@ -121,7 +122,7 @@ function renderUtilities() {
 }
 
 function renderAlert(alert, utilities) {
-  const active = Boolean(alert);
+  const active = Boolean(alert) && alert.raisedAt !== dismissedAlertAt;
   elements.alertOverlay.hidden = !active;
   if (!active) { stopAlertSound(); return; }
   const isAlarm = alert.kind === 'alarm';
@@ -315,8 +316,20 @@ elements.anchorButton.addEventListener('click', () => {
   const nextAnchor = anchorCycle[(currentIndex + 1 + anchorCycle.length) % anchorCycle.length];
   setSetting('anchor', nextAnchor);
 });
-elements.dismissAlertButton.addEventListener('click', async () => {
+async function dismissAlert() {
+  const alert = state?.utilities?.alert;
+  if (alert?.raisedAt) dismissedAlertAt = alert.raisedAt;
+  elements.alertOverlay.hidden = true;
+  stopAlertSound();
   try { await window.nowLayer.dismissAlert(); } catch (error) { console.error('Could not dismiss alert:', error); }
+}
+
+elements.dismissAlertButton.addEventListener('click', dismissAlert);
+window.addEventListener('keydown', (event) => {
+  if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === 'a') {
+    event.preventDefault();
+    dismissAlert();
+  }
 });
 window.addEventListener('beforeunload', stopCaptureStream);
 window.addEventListener('beforeunload', stopAlertSound);

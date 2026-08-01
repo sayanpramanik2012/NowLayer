@@ -63,6 +63,7 @@ test('timer, alarm, clock, and startup controls are available through the safe b
   assert.match(control, /id="alarmTime"/);
   assert.match(control, /id="utilityDisplayMode"/);
   assert.match(overlay, /id="alertOverlay"/);
+  assert.match(overlay, /dismissAlertButton/);
   assert.match(utility, /id="timer"/);
   assert.match(preload, /startTimer/);
   assert.match(preload, /setStartup/);
