@@ -63,6 +63,7 @@ class Timekeeper extends EventEmitter {
     this.state.timer.active = false;
     this.state.timer.endAt = 0;
     this.state.timer.pausedRemaining = 0;
+    this.timerStartedThisSession = false;
     this.interval = null;
   }
 
@@ -87,6 +88,7 @@ class Timekeeper extends EventEmitter {
 
   startTimer(seconds) {
     const duration = clampNumber(seconds, 1, MAX_TIMER_SECONDS, 60);
+    this.timerStartedThisSession = true;
     return this.update({ timer: { active: true, endAt: this.now() + duration * 1000, pausedRemaining: duration } });
   }
 
@@ -96,6 +98,7 @@ class Timekeeper extends EventEmitter {
   }
 
   resetTimer() {
+    this.timerStartedThisSession = false;
     return this.update({ timer: { active: false, endAt: 0, pausedRemaining: 0 } });
   }
 
@@ -107,7 +110,7 @@ class Timekeeper extends EventEmitter {
 
   tick() {
     const now = this.now();
-    if (this.state.timer.active && this.state.timer.endAt > 0 && this.state.timer.endAt <= now) {
+    if (this.timerStartedThisSession && this.state.timer.active && this.state.timer.endAt > 0 && this.state.timer.endAt <= now) {
       const timer = { ...this.state.timer, active: false, endAt: 0, pausedRemaining: 0 };
       this.state = { ...this.state, timer, alert: { kind: 'timer', raisedAt: now, soundEnabled: timer.soundEnabled, soundPath: timer.soundPath } };
       this.emit('change', this.getState());
