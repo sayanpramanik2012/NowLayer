@@ -79,6 +79,18 @@ class OverlayManager extends EventEmitter {
       this.emit('settings-changed', this.settings);
     });
 
+    window.on('resized', () => {
+      if (!this.videoMode || this.settings.locked || window.isDestroyed()) return;
+      const [rawWidth] = window.getSize();
+      const width = Math.min(960, Math.max(320, Math.round(rawWidth)));
+      const height = Math.round(width * 9 / 16);
+      this.settings = sanitizeSettings({
+        ...this.settings,
+        pipBounds: { width, height },
+      });
+      this.emit('settings-changed', this.settings);
+    });
+
     window.on('closed', () => {
       if (this.desktopWindow === window) this.desktopWindow = null;
     });
@@ -89,8 +101,16 @@ class OverlayManager extends EventEmitter {
   createUtilityWindow() {
     if (this.utilityWindow && !this.utilityWindow.isDestroyed()) return this.utilityWindow;
     if (!this.utilityRendererPath) return null;
-    const display = this.screen.getDisplayNearestPoint({ x: 0, y: 0 });
-    const bounds = { width: 242, height: 68, x: display.workArea.x + display.workArea.width - 266, y: display.workArea.y + 24 };
+    const requested = this.settings.utilityBounds || {};
+    const display = this.screen.getDisplayNearestPoint({ x: Number.isFinite(requested.x) ? requested.x : 0, y: Number.isFinite(requested.y) ? requested.y : 0 });
+    const dimensions = this.getUtilityDimensions();
+    const x = Number.isFinite(requested.x) ? requested.x : display.workArea.x + display.workArea.width - dimensions.width - 24;
+    const y = Number.isFinite(requested.y) ? requested.y : display.workArea.y + 24;
+    const bounds = {
+      ...dimensions,
+      x: Math.min(display.workArea.x + display.workArea.width - dimensions.width, Math.max(display.workArea.x, x)),
+      y: Math.min(display.workArea.y + display.workArea.height - dimensions.height, Math.max(display.workArea.y, y)),
+    };
     const window = new this.BrowserWindow({
       ...bounds,
       title: 'NowLayer Time & Timer',
@@ -113,6 +133,12 @@ class OverlayManager extends EventEmitter {
     this.keepUtilityOnTop();
     window.loadFile(this.utilityRendererPath);
     window.once('ready-to-show', () => this.applyUtilityWindow());
+    window.on('moved', () => {
+      if (window.isDestroyed()) return;
+      const [x, y] = window.getPosition();
+      this.settings = sanitizeSettings({ ...this.settings, utilityBounds: { x, y } });
+      this.emit('settings-changed', this.settings);
+    });
     window.on('closed', () => { if (this.utilityWindow === window) this.utilityWindow = null; });
     return window;
   }
@@ -141,6 +167,10 @@ class OverlayManager extends EventEmitter {
     this.keepOnTop();
     window.setIgnoreMouseEvents(this.settings.locked, { forward: true });
     if (typeof window.setFocusable === 'function') window.setFocusable(!this.settings.locked);
+    if (typeof window.setResizable === 'function') window.setResizable(this.videoMode && !this.settings.locked);
+    if (typeof window.setMinimumSize === 'function') window.setMinimumSize(this.videoMode ? 320 : 300, this.videoMode ? 180 : 76);
+    if (typeof window.setMaximumSize === 'function') window.setMaximumSize(this.videoMode ? 960 : 720, this.videoMode ? 540 : 116);
+    if (typeof window.setAspectRatio === 'function') window.setAspectRatio(this.videoMode ? 16 / 9 : 0);
 
     const currentSize = typeof window.getSize === 'function'
       ? window.getSize()
@@ -172,9 +202,8 @@ class OverlayManager extends EventEmitter {
     }
     const window = this.createUtilityWindow();
     if (!window || window.isDestroyed()) return;
-    const widgetWidth = (utilities.showClock && utilities.showTimer === false)
-      || (!utilities.showClock && utilities.showTimer !== false) ? 172 : 242;
-    if (typeof window.setSize === 'function') window.setSize(widgetWidth, 68, false);
+    const dimensions = this.getUtilityDimensions();
+    if (typeof window.setSize === 'function') window.setSize(dimensions.width, dimensions.height, false);
     this.keepUtilityOnTop();
     window.setIgnoreMouseEvents(this.settings.locked, { forward: true });
     if (typeof window.setFocusable === 'function') window.setFocusable(!this.settings.locked);
@@ -187,6 +216,8 @@ class OverlayManager extends EventEmitter {
       ...this.settings,
       ...patch,
       bounds: { ...this.settings.bounds, ...(patch.bounds ?? {}) },
+      pipBounds: { ...this.settings.pipBounds, ...(patch.pipBounds ?? {}) },
+      utilityBounds: { ...this.settings.utilityBounds, ...(patch.utilityBounds ?? {}) },
     });
     this.applySettings();
     this.emit('settings-changed', this.settings);
@@ -239,10 +270,21 @@ class OverlayManager extends EventEmitter {
   }
 
   getTargetDimensions() {
-    if (this.videoMode) return { width: 480, height: 270 };
+    if (this.videoMode) return { ...this.settings.pipBounds };
     return {
       width: this.settings.bounds.width,
       height: this.settings.compact ? 76 : 116,
+    };
+  }
+
+  getUtilityDimensions() {
+    const utilities = this.settings.utilities || {};
+    const analog = utilities.showClock && utilities.clockStyle === 'analog';
+    const onePanel = (utilities.showClock && utilities.showTimer === false)
+      || (!utilities.showClock && utilities.showTimer !== false);
+    return {
+      width: analog ? (utilities.showTimer === false ? 132 : 270) : (onePanel ? 172 : 242),
+      height: analog ? 132 : 68,
     };
   }
 

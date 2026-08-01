@@ -37,8 +37,11 @@ const elements = {
   compactToggle: document.getElementById('compactToggle'),
   pipControlsToggle: document.getElementById('pipControlsToggle'),
   pipControlPositionSelect: document.getElementById('pipControlPositionSelect'),
-  opacitySlider: document.getElementById('opacitySlider'),
-  opacityValue: document.getElementById('opacityValue'),
+  pipSizeSelect: document.getElementById('pipSizeSelect'),
+  mediaOpacitySlider: document.getElementById('mediaOpacitySlider'),
+  mediaOpacityValue: document.getElementById('mediaOpacityValue'),
+  videoOpacitySlider: document.getElementById('videoOpacitySlider'),
+  videoOpacityValue: document.getElementById('videoOpacityValue'),
   resetButton: document.getElementById('resetButton'),
   copyDiagnosticsButton: document.getElementById('copyDiagnosticsButton'),
   copyConfirmation: document.getElementById('copyConfirmation'),
@@ -49,6 +52,13 @@ const elements = {
   errorPanel: document.getElementById('errorPanel'),
   mediaError: document.getElementById('mediaError'),
   clockToggle: document.getElementById('clockToggle'),
+  clockStyleSelect: document.getElementById('clockStyleSelect'),
+  clockFormatSelect: document.getElementById('clockFormatSelect'),
+  clockSecondsToggle: document.getElementById('clockSecondsToggle'),
+  clockOpacitySlider: document.getElementById('clockOpacitySlider'),
+  clockOpacityValue: document.getElementById('clockOpacityValue'),
+  timerOpacitySlider: document.getElementById('timerOpacitySlider'),
+  timerOpacityValue: document.getElementById('timerOpacityValue'),
   utilityDisplayMode: document.getElementById('utilityDisplayMode'),
   utilityVisibleToggle: document.getElementById('utilityVisibleToggle'),
   showTimerToggle: document.getElementById('showTimerToggle'),
@@ -73,6 +83,8 @@ const elements = {
   lockHotkeyInput: document.getElementById('lockHotkeyInput'),
   dismissHotkeyInput: document.getElementById('dismissHotkeyInput'),
   hotkeyMessage: document.getElementById('hotkeyMessage'),
+  dismissShortcutHint: document.getElementById('dismissShortcutHint'),
+  lockShortcutHint: document.getElementById('lockShortcutHint'),
 };
 
 const iconPath = '../assets/material-icons.svg';
@@ -89,10 +101,11 @@ const anchorNames = {
 };
 
 let state = null;
-let opacityCommitTimer = null;
+const opacityCommitTimers = new Map();
 let captureSources = [];
 let sourcesLoaded = false;
 let renderedSelectedSourceId = null;
+let activeHotkeyRecorder = null;
 
 elements.controlArtworkImage.addEventListener('load', () => {
   elements.controlArtwork.classList.add('has-image');
@@ -242,10 +255,17 @@ function render(nextState) {
   elements.pipControlsToggle.checked = settings.showPipControls !== false;
   elements.pipControlPositionSelect.value = settings.pipControlPosition || 'top-right';
   elements.pipControlPositionSelect.disabled = settings.showPipControls === false;
-  const opacityPercent = Math.round((settings.opacity ?? 0.94) * 100);
-  if (document.activeElement !== elements.opacitySlider) elements.opacitySlider.value = String(opacityPercent);
-  elements.opacityValue.textContent = `${opacityPercent}%`;
+  renderOpacity(elements.mediaOpacitySlider, elements.mediaOpacityValue, settings.mediaOpacity ?? settings.opacity);
+  renderOpacity(elements.videoOpacitySlider, elements.videoOpacityValue, settings.videoOpacity ?? 1);
+  const pipWidth = Number(settings.pipBounds?.width) || 480;
+  elements.pipSizeSelect.value = [320, 480, 640].includes(pipWidth) ? String(pipWidth) : 'custom';
   elements.clockToggle.checked = utilities.showClock === true;
+  elements.clockStyleSelect.value = utilities.clockStyle || 'digital';
+  elements.clockFormatSelect.value = utilities.use24Hour ? '24' : '12';
+  elements.clockFormatSelect.disabled = utilities.clockStyle === 'analog';
+  elements.clockSecondsToggle.checked = utilities.showSeconds === true;
+  renderOpacity(elements.clockOpacitySlider, elements.clockOpacityValue, utilities.clockOpacity);
+  renderOpacity(elements.timerOpacitySlider, elements.timerOpacityValue, utilities.timerOpacity);
   elements.utilityDisplayMode.value = utilities.displayMode || 'embedded';
   elements.utilityVisibleToggle.checked = utilities.widgetVisible !== false;
   elements.showTimerToggle.checked = utilities.showTimer !== false;
@@ -262,9 +282,11 @@ function render(nextState) {
   elements.alarmReadout.textContent = utilities.alarm?.enabled ? `Daily at ${utilities.alarm.time}` : 'Off';
   elements.dismissActiveAlertButton.hidden = !utilities.alert;
   const hotkeys = settings.hotkeys || {};
-  if (document.activeElement !== elements.visibilityHotkeyInput) elements.visibilityHotkeyInput.value = hotkeys.visibility || '';
-  if (document.activeElement !== elements.lockHotkeyInput) elements.lockHotkeyInput.value = hotkeys.lock || '';
-  if (document.activeElement !== elements.dismissHotkeyInput) elements.dismissHotkeyInput.value = hotkeys.dismissAlert || '';
+  if (activeHotkeyRecorder?.button !== elements.visibilityHotkeyInput) elements.visibilityHotkeyInput.querySelector('kbd').textContent = prettyHotkey(hotkeys.visibility);
+  if (activeHotkeyRecorder?.button !== elements.lockHotkeyInput) elements.lockHotkeyInput.querySelector('kbd').textContent = prettyHotkey(hotkeys.lock);
+  if (activeHotkeyRecorder?.button !== elements.dismissHotkeyInput) elements.dismissHotkeyInput.querySelector('kbd').textContent = prettyHotkey(hotkeys.dismissAlert);
+  elements.dismissShortcutHint.textContent = prettyHotkey(hotkeys.dismissAlert);
+  elements.lockShortcutHint.textContent = prettyHotkey(hotkeys.lock);
 
   elements.mediaStatus.textContent = available ? (playing ? 'Playing now' : 'Media paused') : 'Waiting for media';
   elements.mediaDetail.textContent = available
@@ -358,15 +380,29 @@ elements.pipControlsToggle.addEventListener('change', () => {
 elements.pipControlPositionSelect.addEventListener('change', () => {
   setSetting('pipControlPosition', elements.pipControlPositionSelect.value);
 });
-elements.opacitySlider.addEventListener('input', () => {
-  elements.opacityValue.textContent = `${elements.opacitySlider.value}%`;
-  if (opacityCommitTimer) clearTimeout(opacityCommitTimer);
-  opacityCommitTimer = setTimeout(() => {
-    setSetting('opacity', Number(elements.opacitySlider.value) / 100);
-  }, 80);
+elements.pipSizeSelect.addEventListener('change', () => {
+  if (elements.pipSizeSelect.value === 'custom') return;
+  const width = Number(elements.pipSizeSelect.value);
+  setSetting('pipBounds', { width, height: Math.round(width * 9 / 16) });
 });
+bindOpacity(elements.mediaOpacitySlider, elements.mediaOpacityValue, 'mediaOpacity', (value) => value);
+bindOpacity(elements.videoOpacitySlider, elements.videoOpacityValue, 'videoOpacity', (value) => value);
+bindOpacity(elements.clockOpacitySlider, elements.clockOpacityValue, 'utilities', (clockOpacity) => ({ clockOpacity }));
+bindOpacity(elements.timerOpacitySlider, elements.timerOpacityValue, 'utilities', (timerOpacity) => ({ timerOpacity }));
 elements.clockToggle.addEventListener('change', () => updateUtilities({ showClock: elements.clockToggle.checked }));
-elements.utilityDisplayMode.addEventListener('change', () => updateUtilities({ displayMode: elements.utilityDisplayMode.value }));
+elements.clockStyleSelect.addEventListener('change', () => {
+  const analog = elements.clockStyleSelect.value === 'analog';
+  updateUtilities({
+    clockStyle: elements.clockStyleSelect.value,
+    ...(analog ? { displayMode: 'separate', widgetVisible: true, showClock: true } : {}),
+  });
+});
+elements.clockFormatSelect.addEventListener('change', () => updateUtilities({ use24Hour: elements.clockFormatSelect.value === '24' }));
+elements.clockSecondsToggle.addEventListener('change', () => updateUtilities({ showSeconds: elements.clockSecondsToggle.checked }));
+elements.utilityDisplayMode.addEventListener('change', () => updateUtilities({
+  displayMode: elements.utilityDisplayMode.value,
+  ...(elements.utilityDisplayMode.value === 'embedded' && state?.utilities?.clockStyle === 'analog' ? { clockStyle: 'digital' } : {}),
+}));
 elements.utilityVisibleToggle.addEventListener('change', () => updateUtilities({ widgetVisible: elements.utilityVisibleToggle.checked }));
 elements.showTimerToggle.addEventListener('change', () => updateUtilities({ showTimer: elements.showTimerToggle.checked }));
 elements.startupToggle.addEventListener('change', async () => {
@@ -395,16 +431,92 @@ elements.alarmSoundButton.addEventListener('click', async () => {
   if (result) updateUtilities({ alarm: { soundPath: result.path } });
 });
 elements.dismissActiveAlertButton.addEventListener('click', () => window.nowLayer.dismissAlert());
-for (const [input, key] of [[elements.visibilityHotkeyInput, 'visibility'], [elements.lockHotkeyInput, 'lock'], [elements.dismissHotkeyInput, 'dismissAlert']]) {
-  input.addEventListener('change', async () => {
-    try {
-      const settings = await window.nowLayer.setSetting('hotkeys', { ...(state?.settings?.hotkeys || {}), [key]: input.value });
-      render({ ...state, settings });
-      elements.hotkeyMessage.textContent = 'Shortcut saved.';
-    } catch (error) {
-      elements.hotkeyMessage.textContent = error.message || 'Could not save that shortcut.';
-      render(state);
-    }
+async function cancelHotkeyRecording(message = '') {
+  if (!activeHotkeyRecorder) return;
+  activeHotkeyRecorder.button.classList.remove('is-recording');
+  activeHotkeyRecorder = null;
+  try { await window.nowLayer.setHotkeyCapture(false); } catch { /* capture timeout is a safe fallback */ }
+  if (state) render(state);
+  elements.hotkeyMessage.textContent = message;
+}
+
+async function startHotkeyRecording(button, key) {
+  if (activeHotkeyRecorder) await cancelHotkeyRecording();
+  activeHotkeyRecorder = { button, key };
+  button.classList.add('is-recording');
+  button.querySelector('kbd').textContent = 'Press keys…';
+  elements.hotkeyMessage.textContent = 'Recording… use Ctrl, Alt, or Shift with a letter, number, or F-key.';
+  try { await window.nowLayer.setHotkeyCapture(true); } catch { /* local capture still works */ }
+  button.focus();
+}
+
+for (const [button, key] of [[elements.visibilityHotkeyInput, 'visibility'], [elements.lockHotkeyInput, 'lock'], [elements.dismissHotkeyInput, 'dismissAlert']]) {
+  button.addEventListener('click', () => startHotkeyRecording(button, key));
+}
+
+window.addEventListener('keydown', async (event) => {
+  if (!activeHotkeyRecorder) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  if (event.key === 'Escape') {
+    await cancelHotkeyRecording('Recording cancelled.');
+    return;
+  }
+  const accelerator = acceleratorFromEvent(event);
+  if (accelerator === null) return;
+  if (!accelerator) {
+    elements.hotkeyMessage.textContent = 'Add Ctrl, Alt, or Shift and use a letter, number, or F-key.';
+    return;
+  }
+  const { button, key } = activeHotkeyRecorder;
+  button.classList.remove('is-recording');
+  activeHotkeyRecorder = null;
+  try {
+    await window.nowLayer.setHotkeyCapture(false);
+    const settings = await window.nowLayer.setSetting('hotkeys', { ...(state?.settings?.hotkeys || {}), [key]: accelerator });
+    render({ ...state, settings });
+    elements.hotkeyMessage.textContent = `${prettyHotkey(accelerator)} saved.`;
+  } catch (error) {
+    elements.hotkeyMessage.textContent = error.message || 'That shortcut could not be saved.';
+    render(state);
+  }
+}, true);
+
+window.addEventListener('blur', () => cancelHotkeyRecording('Recording cancelled.'));
+
+function prettyHotkey(accelerator) {
+  return String(accelerator || '')
+    .replace(/CommandOrControl/gi, 'Ctrl')
+    .split('+')
+    .join(' + ');
+}
+
+function acceleratorFromEvent(event) {
+  const modifiers = [];
+  if (event.ctrlKey) modifiers.push('CommandOrControl');
+  if (event.altKey) modifiers.push('Alt');
+  if (event.shiftKey) modifiers.push('Shift');
+  const key = String(event.key || '').toUpperCase();
+  if (['CONTROL', 'ALT', 'SHIFT', 'META'].includes(key)) return null;
+  if (modifiers.length === 0 || !/^(?:[A-Z0-9]|F(?:[1-9]|1[0-2]))$/.test(key)) return '';
+  return [...modifiers, key].join('+');
+}
+
+function renderOpacity(slider, output, value) {
+  const percent = Math.round((Number(value) || 0.94) * 100);
+  if (document.activeElement !== slider) slider.value = String(percent);
+  output.textContent = `${percent}%`;
+}
+
+function bindOpacity(slider, output, settingKey, getValue) {
+  slider.addEventListener('input', () => {
+    output.textContent = `${slider.value}%`;
+    if (opacityCommitTimers.has(slider)) clearTimeout(opacityCommitTimers.get(slider));
+    opacityCommitTimers.set(slider, setTimeout(() => {
+      opacityCommitTimers.delete(slider);
+      if (settingKey === 'utilities') updateUtilities(getValue(Number(slider.value) / 100));
+      else setSetting(settingKey, Number(slider.value) / 100);
+    }, 80));
   });
 }
 elements.quickPrevious.addEventListener('click', () => mediaAction('previous'));

@@ -54,6 +54,8 @@ const DEFAULT_SETTINGS = Object.freeze({
   showPipControls: true,
   pipControlPosition: 'top-right',
   opacity: 0.94,
+  mediaOpacity: 0.94,
+  videoOpacity: 1,
   anchor: 'bottom-right',
   margin: 24,
   hotkeys: DEFAULT_HOTKEYS,
@@ -70,6 +72,14 @@ const DEFAULT_SETTINGS = Object.freeze({
     y: null,
     width: 420,
     height: 116,
+  },
+  pipBounds: {
+    width: 480,
+    height: 270,
+  },
+  utilityBounds: {
+    x: null,
+    y: null,
   },
 });
 
@@ -90,6 +100,11 @@ function sanitizeSettings(candidate = {}) {
   );
   const requestedHeight = candidate.compact ? 76 : 116;
   const height = requestedHeight;
+  const legacyOpacity = clamp(finiteOr(candidate.opacity, DEFAULT_SETTINGS.opacity), 0.3, 1);
+  const pipSource = candidate.pipBounds ?? {};
+  const pipWidth = clamp(Math.round(finiteOr(pipSource.width, DEFAULT_SETTINGS.pipBounds.width)), 320, 960);
+  const pipHeight = Math.round(pipWidth * 9 / 16);
+  const utilitySource = candidate.utilityBounds ?? {};
 
   return {
     onboardingComplete: candidate.onboardingComplete === true,
@@ -100,7 +115,9 @@ function sanitizeSettings(candidate = {}) {
     pipControlPosition: ALLOWED_PIP_CONTROL_POSITIONS.has(candidate.pipControlPosition)
       ? candidate.pipControlPosition
       : DEFAULT_SETTINGS.pipControlPosition,
-    opacity: clamp(finiteOr(candidate.opacity, DEFAULT_SETTINGS.opacity), 0.45, 1),
+    opacity: legacyOpacity,
+    mediaOpacity: clamp(finiteOr(candidate.mediaOpacity, legacyOpacity), 0.3, 1),
+    videoOpacity: clamp(finiteOr(candidate.videoOpacity, DEFAULT_SETTINGS.videoOpacity), 0.3, 1),
     anchor: ALLOWED_ANCHORS.has(candidate.anchor)
       ? candidate.anchor
       : DEFAULT_SETTINGS.anchor,
@@ -116,6 +133,11 @@ function sanitizeSettings(candidate = {}) {
       y: Number.isFinite(sourceBounds.y) ? Math.round(sourceBounds.y) : null,
       width,
       height,
+    },
+    pipBounds: { width: pipWidth, height: pipHeight },
+    utilityBounds: {
+      x: Number.isFinite(utilitySource.x) ? Math.round(utilitySource.x) : null,
+      y: Number.isFinite(utilitySource.y) ? Math.round(utilitySource.y) : null,
     },
   };
 }

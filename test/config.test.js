@@ -13,6 +13,9 @@ test('sanitizeSettings rejects unsafe and out-of-range values', () => {
     showPipControls: false,
     pipControlPosition: 'center',
     opacity: 7,
+    mediaOpacity: 0.1,
+    videoOpacity: 2,
+    pipBounds: { width: 777, height: 1 },
     anchor: 'somewhere',
     margin: -40,
     bounds: { x: 12.4, y: Number.NaN, width: 10000, height: 1 },
@@ -24,6 +27,9 @@ test('sanitizeSettings rejects unsafe and out-of-range values', () => {
   assert.equal(result.showPipControls, false);
   assert.equal(result.pipControlPosition, 'top-right');
   assert.equal(result.opacity, 1);
+  assert.equal(result.mediaOpacity, 0.3);
+  assert.equal(result.videoOpacity, 1);
+  assert.deepEqual(result.pipBounds, { width: 777, height: 437 });
   assert.equal(result.anchor, 'bottom-right');
   assert.equal(result.margin, 0);
   assert.deepEqual(result.bounds, { x: 12, y: null, width: 720, height: 76 });
@@ -77,6 +83,11 @@ test('clock, timer, and alarm preferences are persisted safely', () => {
       displayMode: 'separate',
       showTimer: false,
       widgetVisible: true,
+      clockStyle: 'analog',
+      use24Hour: true,
+      showSeconds: true,
+      clockOpacity: 0.55,
+      timerOpacity: 0.7,
       timer: { pausedRemaining: 90, soundEnabled: true },
       alarm: { enabled: true, time: '06:45', soundEnabled: false },
     },
@@ -85,6 +96,11 @@ test('clock, timer, and alarm preferences are persisted safely', () => {
   assert.equal(result.utilities.displayMode, 'separate');
   assert.equal(result.utilities.showTimer, false);
   assert.equal(result.utilities.widgetVisible, true);
+  assert.equal(result.utilities.clockStyle, 'analog');
+  assert.equal(result.utilities.use24Hour, true);
+  assert.equal(result.utilities.showSeconds, true);
+  assert.equal(result.utilities.clockOpacity, 0.55);
+  assert.equal(result.utilities.timerOpacity, 0.7);
   assert.equal(result.utilities.timer.pausedRemaining, 90);
   assert.equal(result.utilities.timer.soundEnabled, true);
   assert.equal(result.utilities.alarm.time, '06:45');

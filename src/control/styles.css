@@ -367,11 +367,12 @@ select {
 select:disabled { cursor: default; opacity: 0.42; }
 
 .hotkey-panel { margin-top: 14px; }
-.hotkey-panel > div { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; color: var(--muted); font-size: 10px; }
 .hotkey-panel kbd { padding: 5px 8px; }
 .hotkey-panel > p { margin: 7px 0 0; color: var(--muted); font-size: 9px; line-height: 1.5; }
-.hotkey-panel label { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-top: 12px; color: var(--muted); font-size: 10px; }
-.hotkey-input { width: 190px; border: 1px solid var(--line); border-radius: 8px; padding: 8px 9px; color: var(--text); background: #0d0d13; font: 10px "Cascadia Mono", Consolas, monospace; }
+.hotkey-recorder { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 15px; margin-top: 10px; border: 1px solid var(--line); border-radius: 10px; padding: 10px 11px; color: var(--muted); background: #0d0d13; cursor: pointer; font-size: 10px; text-align: left; }
+.hotkey-recorder:hover { border-color: rgba(255,255,255,.2); color: #fff; }
+.hotkey-recorder.is-recording { border-color: rgba(255,79,100,.72); background: rgba(255,79,100,.09); box-shadow: 0 0 0 3px rgba(255,79,100,.08); }
+.hotkey-recorder.is-recording kbd { color: #fecdd3; border-color: rgba(255,79,100,.42); }
 
 .checklist ol { margin: 13px 0 0; padding-left: 20px; color: var(--muted); font-size: 10px; line-height: 1.8; }
 .checklist strong { color: #d8d9e0; }
@@ -392,6 +393,9 @@ select:disabled { cursor: default; opacity: 0.42; }
   padding: 15px;
   background: linear-gradient(135deg, rgba(59, 130, 246, 0.09), rgba(27, 27, 35, 0.94));
 }
+.pip-size-panel { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 14px; padding: 14px 16px; }
+.pip-size-panel div { min-width: 0; }
+.pip-size-panel p { max-width: 570px; }
 
 .capture-status-card > div { min-width: 0; flex: 1; }
 .capture-status-card small,

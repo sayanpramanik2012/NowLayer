@@ -16,6 +16,7 @@ contextBridge.exposeInMainWorld('nowLayer', Object.freeze({
   dismissAlert: () => ipcRenderer.invoke('nowlayer:alert-dismiss'),
   chooseAlertSound: () => ipcRenderer.invoke('nowlayer:choose-alert-sound'),
   setStartup: (enabled) => ipcRenderer.invoke('nowlayer:set-startup', enabled),
+  setHotkeyCapture: (active) => ipcRenderer.invoke('nowlayer:hotkey-capture', active),
   onState: (callback) => {
     const listener = (_event, state) => callback(state);
     ipcRenderer.on('nowlayer:state', listener);

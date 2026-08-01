@@ -28,6 +28,8 @@ function attachWindow(manager) {
     showInactive: 0,
     hide: 0,
     moveTop: 0,
+    resizable: [],
+    aspectRatios: [],
   };
   manager.desktopWindow = {
     webContents: { isDestroyed: () => false, send: () => {} },
@@ -38,6 +40,10 @@ function attachWindow(manager) {
     setFocusable: (...args) => calls.focusable.push(args),
     setIgnoreMouseEvents: (...args) => calls.ignore.push(args),
     setSize: (...args) => calls.sizes.push(args),
+    setResizable: (...args) => calls.resizable.push(args),
+    setAspectRatio: (...args) => calls.aspectRatios.push(args),
+    setMinimumSize: () => {},
+    setMaximumSize: () => {},
     setBounds: (...args) => calls.bounds.push(args),
     showInactive: () => { calls.showInactive += 1; },
     hide: () => { calls.hide += 1; },
@@ -91,6 +97,19 @@ test('video mode resizes the overlay to a 16:9 PiP surface', () => {
   assert.deepEqual(calls.sizes.at(-1), [480, 270, false]);
   assert.equal(calls.bounds.at(-1)[0].width, 480);
   assert.equal(calls.bounds.at(-1)[0].height, 270);
+  assert.deepEqual(calls.resizable.at(-1), [false]);
+  assert.deepEqual(calls.aspectRatios.at(-1), [16 / 9]);
+});
+
+test('unlocked video PiP is resizable and uses the saved 16:9 size', () => {
+  const manager = createManager();
+  const calls = attachWindow(manager);
+  manager.updateSettings({ locked: false, pipBounds: { width: 640, height: 1 } });
+  manager.setVideoMode(true);
+
+  assert.deepEqual(manager.getTargetDimensions(), { width: 640, height: 360 });
+  assert.deepEqual(calls.resizable.at(-1), [true]);
+  assert.deepEqual(calls.sizes.at(-1), [640, 360, false]);
 });
 
 test('separate time widget follows the same game-safe click-through mode', () => {

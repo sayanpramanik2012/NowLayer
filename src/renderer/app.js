@@ -78,6 +78,15 @@ function formatCountdown(seconds) {
   return hours > 0 ? `${hours}:${String(minutes).padStart(2, '0')}:${String(remainder).padStart(2, '0')}` : `${String(minutes).padStart(2, '0')}:${String(remainder).padStart(2, '0')}`;
 }
 
+function formatClock(date, utilities) {
+  return new Intl.DateTimeFormat(undefined, {
+    hour: 'numeric',
+    minute: '2-digit',
+    ...(utilities.showSeconds ? { second: '2-digit' } : {}),
+    hour12: !utilities.use24Hour,
+  }).format(date);
+}
+
 function timerRemaining(timer) {
   if (timer?.active && timer.endAt > Date.now()) return Math.ceil((timer.endAt - Date.now()) / 1000);
   return Number(timer?.pausedRemaining) || 0;
@@ -116,7 +125,7 @@ function renderUtilities() {
   const utilities = state?.utilities ?? {};
   const timer = utilities.timer ?? {};
   const embedded = utilities.displayMode !== 'separate';
-  elements.clockDisplay.textContent = embedded && utilities.showClock ? new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(new Date()) : '';
+  elements.clockDisplay.textContent = embedded && utilities.showClock ? formatClock(new Date(), utilities) : '';
   elements.timerDisplay.textContent = embedded && utilities.showTimer !== false && (timer.active || timer.pausedRemaining) ? `T ${formatCountdown(timerRemaining(timer))}` : '';
   elements.overlay.classList.toggle('has-utilities', Boolean(elements.clockDisplay.textContent || elements.timerDisplay.textContent));
 }
@@ -127,7 +136,8 @@ function renderAlert(alert, utilities) {
   if (!active) { stopAlertSound(); return; }
   const isAlarm = alert.kind === 'alarm';
   elements.alertTitle.textContent = isAlarm ? 'Alarm' : 'Timer finished';
-  elements.alertMessage.textContent = isAlarm ? `It is ${utilities.alarm?.time || 'time'}. Ctrl + Shift + A dismisses.` : 'Time is up. Ctrl + Shift + A dismisses.';
+  const dismissKey = String(state?.settings?.hotkeys?.dismissAlert || 'CommandOrControl+Shift+A').replace(/CommandOrControl/gi, 'Ctrl').split('+').join(' + ');
+  elements.alertMessage.textContent = isAlarm ? `It is ${utilities.alarm?.time || 'time'}. ${dismissKey} dismisses.` : `Time is up. ${dismissKey} dismisses.`;
   if (alert.raisedAt && alert.raisedAt !== handledAlertAt) {
     handledAlertAt = alert.raisedAt;
     if (alert.soundEnabled) {
@@ -243,7 +253,10 @@ function render(nextState) {
   );
   elements.overlay.classList.toggle('is-playing', playing);
   elements.overlay.classList.toggle('no-media', !available);
-  document.documentElement.style.setProperty('--panel-opacity', String(settings.opacity ?? 0.94));
+  document.documentElement.style.setProperty('--media-opacity', String(settings.mediaOpacity ?? settings.opacity ?? 0.94));
+  document.documentElement.style.setProperty('--video-opacity', String(settings.videoOpacity ?? 1));
+  document.documentElement.style.setProperty('--clock-opacity', String(utilities.clockOpacity ?? 0.94));
+  document.documentElement.style.setProperty('--timer-opacity', String(utilities.timerOpacity ?? 0.94));
 
   elements.title.textContent = available ? (media.title || 'Untitled media') : 'Nothing playing';
   elements.subtitle.textContent = available
@@ -261,6 +274,7 @@ function render(nextState) {
   setIcon(elements.playIcon, playing ? 'pause' : 'play');
   setIcon(elements.pipPlayIcon, playing ? 'pause' : 'play');
   elements.pipControls.dataset.position = settings.pipControlPosition || 'top-right';
+  elements.hideButton.title = `Hide overlay (${String(settings.hotkeys?.visibility || 'CommandOrControl+Shift+M').replace(/CommandOrControl/gi, 'Ctrl').split('+').join(' + ')} to restore)`;
   elements.anchorButton.textContent = anchorLabels[settings.anchor] || 'BR';
   renderUtilities();
   renderAlert(utilities.alert, utilities);

@@ -67,6 +67,7 @@ let controlWindow = null;
 let tray = null;
 let videoState = normalizeVideoState();
 let timekeeper = null;
+let hotkeyCaptureTimer = null;
 
 function currentState() {
   const utilities = timekeeper?.getState() ?? overlayManager.settings.utilities;
@@ -268,6 +269,9 @@ ipcMain.handle('nowlayer:set-setting', (_event, key, value) => {
     'showPipControls',
     'pipControlPosition',
     'opacity',
+    'mediaOpacity',
+    'videoOpacity',
+    'pipBounds',
     'anchor',
     'utilities',
     'hotkeys',
@@ -287,6 +291,20 @@ ipcMain.handle('nowlayer:set-setting', (_event, key, value) => {
     return overlayManager.updateSettings({ hotkeys: requested });
   }
   return overlayManager.updateSettings({ [key]: value });
+});
+
+ipcMain.handle('nowlayer:hotkey-capture', (_event, active) => {
+  if (hotkeyCaptureTimer) clearTimeout(hotkeyCaptureTimer);
+  hotkeyCaptureTimer = null;
+  if (typeof globalShortcut.setSuspended !== 'function') return false;
+  globalShortcut.setSuspended(active === true);
+  if (active === true) {
+    hotkeyCaptureTimer = setTimeout(() => {
+      hotkeyCaptureTimer = null;
+      globalShortcut.setSuspended(false);
+    }, 15000);
+  }
+  return globalShortcut.isSuspended();
 });
 
 ipcMain.handle('nowlayer:timer-start', (_event, seconds) => timekeeper.startTimer(seconds));

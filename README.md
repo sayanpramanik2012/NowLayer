@@ -21,11 +21,11 @@ NowLayer keeps music and video within view while you play. It places a compact, 
 Checking a song title should not require an Alt+Tab. Neither should keeping a video nearby. NowLayer turns your active Windows media session or a selected video window into a clean overlay that stays exactly where you put it.
 
 - **Live now-playing information** — See the track, artist, artwork, playback state, and a timeline that moves with your media.
-- **Video PiP for the windows you already use** — Mirror YouTube, a browser window, or another compatible video player into a focused 16:9 view.
+- **Video PiP for the windows you already use** — Mirror YouTube, a browser window, or another compatible video player into a resizable 16:9 view.
 - **Game-safe click-through mode** — Lock NowLayer and mouse input passes directly to the game or app underneath it.
 - **Control when you want it** — Unlock the overlay for playback controls, positioning, and customization, then lock it again in one keystroke.
-- **Fits your setup** — Snap it to any edge or corner, drag it freely, switch to compact mode, and tune the opacity.
-- **Time your way** — Run a clock-only widget, add a visible countdown, or set a daily alarm without leaving the game. Keep it inside the media layer or float it separately.
+- **Fits your setup** — Snap it to any edge or corner, drag it freely, resize Video PiP, and tune media, video, clock, and timer opacity independently.
+- **Time your way** — Choose a digital or analog clock, 12- or 24-hour time, optional seconds, a visible countdown, or a daily alarm.
 - **Alerts your way** — Silent timers shake the overlay; audible timers and alarms can use the built-in tone or your own audio file.
 - **Ready when you are** — Optionally launch NowLayer with Windows so it is waiting in the system tray.
 - **Private by design** — Media information, captured video, and preferences stay on your Windows PC.
@@ -48,7 +48,7 @@ NowLayer remains available from the Windows system tray when its Control Center 
 | Lock or unlock interaction | `Ctrl` + `Shift` + `L` |
 | Dismiss an active timer or alarm | `Ctrl` + `Shift` + `A` |
 
-All three shortcuts are customizable from **Settings**. NowLayer checks that a chosen key combination is available before saving it.
+All three shortcuts are customizable from **Settings**. Click a shortcut and press the combination you want; NowLayer records it and checks availability before saving.
 
 ## Compatibility
 

@@ -23,23 +23,33 @@ Run `npm.cmd run doctor` for a quick local environment report.
 3. Let the media play for at least 15 seconds. Confirm that the elapsed time and progress bar remain synchronized.
 4. Seek, pause, and resume in the source application. Confirm that NowLayer resynchronizes.
 5. With NowLayer **LOCKED**, click through it and confirm the game or application underneath receives the input.
-6. Press `Ctrl+Shift+L`. Confirm the overlay becomes interactive and its supported media buttons work.
-7. Drag the unlocked overlay, lock it again, then press `Ctrl+Shift+M` twice to test hide and restore.
-8. Test at least two snap positions, compact mode, and several opacity levels.
-9. Close and reopen the Control Center from the system tray.
+6. Press the configured **Lock / unlock interaction** shortcut. Confirm the overlay becomes interactive and its supported media buttons work.
+7. Drag the unlocked overlay, lock it again, then press the configured **Show / hide** shortcut twice to test hide and restore.
+8. Test at least two snap positions, compact mode, and several media-opacity levels.
+9. In **Settings**, click each shortcut recorder and press a new combination. Confirm it saves, works outside NowLayer, rejects duplicates, and Escape cancels recording.
+10. Close and reopen the Control Center from the system tray.
 
 ## Video-PiP acceptance test
 
 1. Open an ordinary YouTube video in a dedicated Chrome or Edge window and begin playback.
 2. Open **Video PiP**, choose **Refresh windows**, and select that browser window.
-3. Confirm that the overlay changes to a 480 × 270 video surface while audio continues only from the source window.
+3. Confirm that the overlay changes to the selected 16:9 size while audio continues only from the source window.
 4. Confirm that the music timeline is hidden and only the optional floating play/pause control appears.
 5. Test every PiP-button corner and the setting that hides the button.
-6. Verify locked click-through and unlocked interaction over the PiP.
-7. Select **Stop PiP** and confirm the media card returns.
-8. Close the selected source window and confirm NowLayer reports that capture has ended.
+6. Unlock PiP, drag an edge to resize it, and confirm it remains 16:9. Lock it and confirm resizing is disabled and input passes through.
+7. Change Video PiP opacity and confirm it does not alter the media, clock, or timer overlay.
+8. Select **Stop PiP** and confirm the media card returns.
+9. Close the selected source window and confirm NowLayer reports that capture has ended.
 
 Protected streaming services may show a black frame by design. Keep the source window open and non-minimized.
+
+## Clock and timer acceptance test
+
+1. Enable the separate clock widget and move it. Restart NowLayer and confirm its position is remembered.
+2. Test digital 12-hour and 24-hour formats with seconds both enabled and disabled.
+3. Select analog mode and confirm the hour and minute hands move correctly; enable seconds and confirm the second hand appears.
+4. Test clock-only, timer-only, and clock-plus-timer layouts.
+5. Set visibly different clock and timer opacity levels and confirm each surface changes independently.
 
 ## Game and display acceptance test
 
