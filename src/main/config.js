@@ -31,6 +31,7 @@ const DEFAULT_SETTINGS = Object.freeze({
   margin: 24,
   utilities: {
     showClock: false,
+    displayMode: 'embedded',
     timer: { active: false, endAt: 0, pausedRemaining: 0, soundEnabled: false, soundPath: '' },
     alarm: { enabled: false, time: '07:00', soundEnabled: false, soundPath: '', lastFiredMinute: '' },
   },

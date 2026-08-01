@@ -55,12 +55,15 @@ test('video PiP controls and bundled Material icon sprite are present', () => {
 test('timer, alarm, clock, and startup controls are available through the safe bridge', () => {
   const control = read('src/control/index.html');
   const overlay = read('src/renderer/index.html');
+  const utility = read('src/utility/index.html');
   const preload = read('src/preload/index.js');
   const main = read('src/main/index.js');
   assert.match(control, /data-view-panel="timers"/);
   assert.match(control, /id="startupToggle"/);
   assert.match(control, /id="alarmTime"/);
+  assert.match(control, /id="utilityDisplayMode"/);
   assert.match(overlay, /id="alertOverlay"/);
+  assert.match(utility, /id="timer"/);
   assert.match(preload, /startTimer/);
   assert.match(preload, /setStartup/);
   assert.match(main, /setLoginItemSettings/);

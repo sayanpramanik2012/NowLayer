@@ -2,15 +2,17 @@ const { EventEmitter } = require('node:events');
 const { calculateAnchoredBounds, sanitizeSettings } = require('./config');
 
 class OverlayManager extends EventEmitter {
-  constructor({ app, BrowserWindow, screen, rendererPath, preloadPath }) {
+  constructor({ app, BrowserWindow, screen, rendererPath, utilityRendererPath, preloadPath }) {
     super();
     this.app = app;
     this.BrowserWindow = BrowserWindow;
     this.screen = screen;
     this.rendererPath = rendererPath;
+    this.utilityRendererPath = utilityRendererPath;
     this.preloadPath = preloadPath;
     this.settings = sanitizeSettings();
     this.desktopWindow = null;
+    this.utilityWindow = null;
     this.positioningWindow = false;
     this.videoMode = false;
     this.status = {
@@ -84,6 +86,37 @@ class OverlayManager extends EventEmitter {
     return window;
   }
 
+  createUtilityWindow() {
+    if (this.utilityWindow && !this.utilityWindow.isDestroyed()) return this.utilityWindow;
+    if (!this.utilityRendererPath) return null;
+    const display = this.screen.getDisplayNearestPoint({ x: 0, y: 0 });
+    const bounds = { width: 228, height: 76, x: display.workArea.x + display.workArea.width - 252, y: display.workArea.y + 24 };
+    const window = new this.BrowserWindow({
+      ...bounds,
+      title: 'NowLayer Time & Timer',
+      frame: false,
+      transparent: true,
+      backgroundColor: '#00000000',
+      resizable: false,
+      movable: true,
+      focusable: !this.settings.locked,
+      show: false,
+      skipTaskbar: true,
+      alwaysOnTop: true,
+      hasShadow: false,
+      fullscreenable: false,
+      maximizable: false,
+      minimizable: false,
+      webPreferences: { preload: this.preloadPath, contextIsolation: true, nodeIntegration: false, sandbox: true, devTools: !this.app.isPackaged },
+    });
+    this.utilityWindow = window;
+    this.keepUtilityOnTop();
+    window.loadFile(this.utilityRendererPath);
+    window.once('ready-to-show', () => this.applyUtilityWindow());
+    window.on('closed', () => { if (this.utilityWindow === window) this.utilityWindow = null; });
+    return window;
+  }
+
   keepOnTop() {
     const window = this.desktopWindow;
     if (!window || window.isDestroyed()) return;
@@ -91,6 +124,13 @@ class OverlayManager extends EventEmitter {
     if (typeof window.setVisibleOnAllWorkspaces === 'function') {
       window.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
     }
+  }
+
+  keepUtilityOnTop() {
+    const window = this.utilityWindow;
+    if (!window || window.isDestroyed()) return;
+    window.setAlwaysOnTop(true, 'screen-saver');
+    if (typeof window.setVisibleOnAllWorkspaces === 'function') window.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   }
 
   applySettings() {
@@ -118,6 +158,25 @@ class OverlayManager extends EventEmitter {
     }
 
     this.broadcast('nowlayer:settings', this.settings);
+    this.applyUtilityWindow();
+  }
+
+  applyUtilityWindow() {
+    const utilities = this.settings.utilities || {};
+    const timer = utilities.timer || {};
+    const shouldShow = this.settings.visible && utilities.displayMode === 'separate'
+      && (utilities.showClock || timer.active || timer.pausedRemaining > 0);
+    if (!shouldShow) {
+      if (this.utilityWindow && !this.utilityWindow.isDestroyed()) this.utilityWindow.hide();
+      return;
+    }
+    const window = this.createUtilityWindow();
+    if (!window || window.isDestroyed()) return;
+    this.keepUtilityOnTop();
+    window.setIgnoreMouseEvents(this.settings.locked, { forward: true });
+    if (typeof window.setFocusable === 'function') window.setFocusable(!this.settings.locked);
+    window.showInactive();
+    if (typeof window.moveTop === 'function') window.moveTop();
   }
 
   updateSettings(patch) {
@@ -185,9 +244,10 @@ class OverlayManager extends EventEmitter {
   }
 
   broadcast(channel, payload) {
-    const window = this.desktopWindow;
-    if (!window || window.isDestroyed() || window.webContents.isDestroyed()) return;
-    window.webContents.send(channel, payload);
+    for (const window of [this.desktopWindow, this.utilityWindow]) {
+      if (!window || window.isDestroyed() || window.webContents.isDestroyed()) continue;
+      window.webContents.send(channel, payload);
+    }
   }
 
   getStatus() {
@@ -200,6 +260,8 @@ class OverlayManager extends EventEmitter {
   dispose() {
     if (this.desktopWindow && !this.desktopWindow.isDestroyed()) this.desktopWindow.destroy();
     this.desktopWindow = null;
+    if (this.utilityWindow && !this.utilityWindow.isDestroyed()) this.utilityWindow.destroy();
+    this.utilityWindow = null;
   }
 }
 

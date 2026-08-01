@@ -32,6 +32,14 @@ test('timer finishes exactly once and produces a visual alert', () => {
   assert.equal(keeper.getState().alert, null);
 });
 
+test('a saved countdown is cleared at startup and cannot trigger a false alert', () => {
+  let now = 10_000;
+  const keeper = new Timekeeper({ timer: { active: true, endAt: 1_000, pausedRemaining: 1 } }, { now: () => now });
+  keeper.tick();
+  assert.equal(keeper.getState().timer.active, false);
+  assert.equal(keeper.getState().alert, null);
+});
+
 test('daily alarm raises only once during its matching minute', () => {
   const time = new Date(2026, 7, 1, 7, 30, 5).getTime();
   const keeper = new Timekeeper({ alarm: { enabled: true, time: '07:30' } }, { now: () => time });

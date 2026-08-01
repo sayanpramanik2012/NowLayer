@@ -37,6 +37,7 @@ if (smokeTestMode) {
 }
 
 const rendererPath = path.join(__dirname, '..', 'renderer', 'index.html');
+const utilityRendererPath = path.join(__dirname, '..', 'utility', 'index.html');
 const controlPath = path.join(__dirname, '..', 'control', 'index.html');
 const preloadPath = path.join(__dirname, '..', 'preload', 'index.js');
 const appIconPath = path.join(__dirname, '..', 'assets', 'app-icon.png');
@@ -53,6 +54,7 @@ const overlayManager = new OverlayManager({
   BrowserWindow,
   screen,
   rendererPath,
+  utilityRendererPath,
   preloadPath,
 });
 
@@ -354,6 +356,7 @@ ipcMain.handle('nowlayer:copy-diagnostics', () => {
 
 ipcMain.handle('nowlayer:reset-settings', () => {
   const defaults = sanitizeSettings(DEFAULT_SETTINGS);
+  timekeeper?.update(defaults.utilities);
   overlayManager.setSettings(defaults);
   scheduleSettingsSave(defaults);
   updateTrayMenu();
@@ -394,6 +397,8 @@ if (!hasSingleInstanceLock) {
       overlayManager.updateSettings({ utilities });
       broadcastState();
     });
+    // Persist the clean startup state so a timer cannot be resurrected next time.
+    overlayManager.updateSettings({ utilities: timekeeper.getState() });
     timekeeper.start();
     overlayManager.createDesktopWindow();
     if (!smokeTestMode) createTray();

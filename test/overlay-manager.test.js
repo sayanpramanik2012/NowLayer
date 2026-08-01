@@ -92,3 +92,25 @@ test('video mode resizes the overlay to a 16:9 PiP surface', () => {
   assert.equal(calls.bounds.at(-1)[0].width, 480);
   assert.equal(calls.bounds.at(-1)[0].height, 270);
 });
+
+test('separate time widget follows the same game-safe click-through mode', () => {
+  const manager = createManager();
+  attachWindow(manager);
+  const calls = { ignore: [], focusable: [], showInactive: 0, alwaysOnTop: [] };
+  manager.utilityWindow = {
+    isDestroyed: () => false,
+    setAlwaysOnTop: (...args) => calls.alwaysOnTop.push(args),
+    setVisibleOnAllWorkspaces: () => {},
+    setIgnoreMouseEvents: (...args) => calls.ignore.push(args),
+    setFocusable: (...args) => calls.focusable.push(args),
+    showInactive: () => { calls.showInactive += 1; },
+    moveTop: () => {},
+    webContents: { isDestroyed: () => false, send: () => {} },
+  };
+  manager.updateSettings({ utilities: { displayMode: 'separate', showClock: true } });
+
+  assert.deepEqual(calls.alwaysOnTop.at(-1), [true, 'screen-saver']);
+  assert.deepEqual(calls.ignore.at(-1), [true, { forward: true }]);
+  assert.deepEqual(calls.focusable.at(-1), [false]);
+  assert.equal(calls.showInactive, 1);
+});
