@@ -1,17 +1,18 @@
-:root { color-scheme: dark; }
+:root { color-scheme: dark; --utility-opacity: .96; }
 * { box-sizing: border-box; }
 html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: transparent; font-family: Inter, "Segoe UI", sans-serif; user-select: none; }
-.widget { position: relative; display: grid; grid-template-columns: 1fr 1fr; width: 100%; height: 100%; overflow: hidden; border: 1px solid rgba(255,255,255,.15); border-radius: 15px; padding: 15px 16px; color: #fff; background: linear-gradient(135deg, rgba(35,35,44,.96), rgba(11,11,16,.96)); box-shadow: 0 12px 32px rgba(0,0,0,.35); }
+.widget { position: relative; display: grid; grid-template-columns: 28px minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: 10px; width: 100%; height: 100%; overflow: hidden; border: 1px solid rgba(255,255,255,.15); border-radius: 17px; padding: 11px 13px; color: #fff; background: linear-gradient(135deg, rgba(47,48,60,var(--utility-opacity)), rgba(13,14,21,var(--utility-opacity))); box-shadow: 0 10px 26px rgba(0,0,0,.28); }
 .drag-region { position: absolute; inset: 0; -webkit-app-region: drag; }
 .widget > div:not(.drag-region):not(.alert) { position: relative; z-index: 1; }
-.timer { padding-left: 14px; border-left: 1px solid rgba(255,255,255,.12); }
-.widget.clock-only { grid-template-columns: 1fr; width: 150px; }
+.brand-mark { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 9px; color: #fff; background: linear-gradient(135deg, #ff5679, #a24af5); box-shadow: 0 5px 14px rgba(255,79,111,.26); font-size: 14px; font-weight: 900; }
+.timer { padding-left: 10px; border-left: 1px solid rgba(255,255,255,.14); }
+.widget.clock-only { grid-template-columns: 28px minmax(0, 1fr); }
 .widget.clock-only .timer { display: none; }
-.widget.timer-only { grid-template-columns: 1fr; width: 150px; }
-.widget.timer-only > div:first-of-type { display: none; }
+.widget.timer-only { grid-template-columns: 28px minmax(0, 1fr); }
+.widget.timer-only .clock { display: none; }
 .widget.timer-only .timer { padding-left: 0; border-left: 0; }
-small { display: block; color: #a7a8b3; font-size: 7px; font-weight: 800; letter-spacing: .13em; }
-strong { display: block; margin-top: 5px; font-size: 19px; font-variant-numeric: tabular-nums; }
+small { display: block; color: #b6b8c4; font-size: 7px; font-weight: 800; letter-spacing: .13em; }
+strong { display: block; margin-top: 4px; font-size: 18px; line-height: 1; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .alert { position: absolute; z-index: 2; inset: 5px; display: grid; place-items: center; border: 1px solid rgba(255,79,100,.8); border-radius: 11px; color: #fff; background: rgba(97,17,31,.96); font-size: 12px; font-weight: 800; letter-spacing: .08em; animation: shake .45s ease-in-out infinite alternate; }
 .alert[hidden] { display: none; }
 @keyframes shake { from { transform: translateX(-2px); } to { transform: translateX(2px); } }
