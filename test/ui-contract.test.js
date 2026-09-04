@@ -45,6 +45,7 @@ test('video PiP controls and bundled Material icon sprite are present', () => {
   assert.match(controlHtml, /data-view-panel="video"/);
   assert.match(controlHtml, /id="pipControlsToggle"/);
   assert.match(controlHtml, /id="pipControlPositionSelect"/);
+  assert.match(controlHtml, /id="pipSizeSelect"/);
   assert.match(overlayHtml, /id="pipPlayButton"/);
   assert.match(overlayStyles, /\.overlay\.is-video \.content\s*{\s*display: none;/);
   assert.match(preload, /listCaptureSources/);
@@ -71,12 +72,19 @@ test('timer, alarm, clock, and startup controls are available through the safe b
   assert.match(overlay, /dismissAlertButton/);
   assert.match(overlayStyles, /\.alert-overlay\[hidden\]\s*\{\s*display:\s*none;/);
   assert.match(utilityStyles, /\.alert\[hidden\]\s*\{\s*display:\s*none;/);
-  assert.match(utilityStyles, /--utility-opacity/);
+  assert.match(utilityStyles, /--clock-opacity/);
+  assert.match(utilityStyles, /--timer-opacity/);
   assert.match(utility, /id="timer"/);
+  assert.match(utility, /id="analogClock"/);
   assert.match(utility, /class="brand-mark"/);
-  assert.match(read('src\/utility\/app.js'), /setProperty\('--utility-opacity'/);
+  assert.match(read('src\/utility\/app.js'), /setProperty\('--clock-opacity'/);
+  assert.match(control, /class="hotkey-recorder"/);
+  assert.match(control, /id="mediaOpacitySlider"/);
+  assert.match(control, /id="videoOpacitySlider"/);
+  assert.match(control, /id="clockStyleSelect"/);
   assert.match(preload, /startTimer/);
   assert.match(preload, /setStartup/);
+  assert.match(preload, /setHotkeyCapture/);
   assert.match(main, /setLoginItemSettings/);
   assert.match(main, /dismissAlert/);
   assert.match(main, /registerDesktopHotkeys\(requested\)/);
@@ -94,6 +102,7 @@ test('standalone package and UI contain no Overwolf runtime dependency', () => {
   assert.doesNotMatch(`${main}\n${manager}\n${control}`, /overwolf/i);
   assert.match(manager, /setAlwaysOnTop\(true, 'screen-saver'\)/);
   assert.match(manager, /setIgnoreMouseEvents\(this\.settings\.locked/);
+  assert.match(manager, /setAspectRatio\(this\.videoMode \? 16 \/ 9 : 0\)/);
   assert.match(main, /--smoke-test/);
 });
 

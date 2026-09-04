@@ -18,6 +18,12 @@ function normalizeSoundPath(value) {
   return path.length > 0 && path.length <= 1024 ? path : '';
 }
 
+function normalizeOpacity(value, fallback = 0.94) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return fallback;
+  return Math.min(1, Math.max(0.3, numeric));
+}
+
 function normalizeUtilities(candidate = {}) {
   const timer = candidate.timer || {};
   const alarm = candidate.alarm || {};
@@ -26,6 +32,11 @@ function normalizeUtilities(candidate = {}) {
     showTimer: candidate.showTimer !== false,
     widgetVisible: candidate.widgetVisible !== false,
     displayMode: candidate.displayMode === 'separate' ? 'separate' : 'embedded',
+    clockStyle: candidate.clockStyle === 'analog' ? 'analog' : 'digital',
+    use24Hour: candidate.use24Hour === true,
+    showSeconds: candidate.showSeconds === true,
+    clockOpacity: normalizeOpacity(candidate.clockOpacity),
+    timerOpacity: normalizeOpacity(candidate.timerOpacity),
     timer: {
       active: timer.active === true && Number.isFinite(timer.endAt) && timer.endAt > 0,
       endAt: Number.isFinite(timer.endAt) ? Math.round(timer.endAt) : 0,

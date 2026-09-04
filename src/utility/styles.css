@@ -1,18 +1,39 @@
-:root { color-scheme: dark; --utility-opacity: .96; }
+:root { color-scheme: dark; --clock-opacity: .94; --timer-opacity: .94; }
 * { box-sizing: border-box; }
 html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: transparent; font-family: Inter, "Segoe UI", sans-serif; user-select: none; }
-.widget { position: relative; display: grid; grid-template-columns: 28px minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: 10px; width: 100%; height: 100%; overflow: hidden; border: 1px solid rgba(255,255,255,.15); border-radius: 17px; padding: 11px 13px; color: #fff; background: linear-gradient(135deg, rgba(47,48,60,var(--utility-opacity)), rgba(13,14,21,var(--utility-opacity))); box-shadow: 0 10px 26px rgba(0,0,0,.28); }
+.widget { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: stretch; gap: 5px; width: 100%; height: 100%; overflow: hidden; padding: 4px; color: #fff; }
 .drag-region { position: absolute; inset: 0; -webkit-app-region: drag; }
 .widget > div:not(.drag-region):not(.alert) { position: relative; z-index: 1; }
-.brand-mark { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 9px; color: #fff; background: linear-gradient(135deg, #ff5679, #a24af5); box-shadow: 0 5px 14px rgba(255,79,111,.26); font-size: 14px; font-weight: 900; }
-.timer { padding-left: 10px; border-left: 1px solid rgba(255,255,255,.14); }
-.widget.clock-only { grid-template-columns: 28px minmax(0, 1fr); }
+.brand-mark { position: absolute !important; z-index: 3 !important; left: 14px; top: 50%; display: grid; width: 28px; height: 28px; place-items: center; border-radius: 9px; color: #fff; background: linear-gradient(135deg, #ff5679, #a24af5); box-shadow: 0 5px 14px rgba(255,79,111,.26); font-size: 14px; font-weight: 900; transform: translateY(-50%); }
+.clock, .timer { min-width: 0; border: 1px solid rgba(255,255,255,.14); border-radius: 14px; padding: 11px 12px; box-shadow: 0 9px 24px rgba(0,0,0,.24); }
+.clock { padding-left: 47px; background: linear-gradient(135deg, rgba(47,48,60,var(--clock-opacity)), rgba(13,14,21,var(--clock-opacity))); }
+.timer { background: linear-gradient(135deg, rgba(39,40,49,var(--timer-opacity)), rgba(10,11,17,var(--timer-opacity))); }
+.widget.clock-only { grid-template-columns: minmax(0, 1fr); }
 .widget.clock-only .timer { display: none; }
-.widget.timer-only { grid-template-columns: 28px minmax(0, 1fr); }
+.widget.timer-only { grid-template-columns: minmax(0, 1fr); }
 .widget.timer-only .clock { display: none; }
-.widget.timer-only .timer { padding-left: 0; border-left: 0; }
+.widget.timer-only .timer { padding-left: 47px; }
 small { display: block; color: #b6b8c4; font-size: 7px; font-weight: 800; letter-spacing: .13em; }
 strong { display: block; margin-top: 4px; font-size: 18px; line-height: 1; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.analog-clock { position: relative; display: none; width: 86px; height: 86px; margin: 7px auto 0; border: 1px solid rgba(255,255,255,.2); border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,.06) 0 58%, transparent 59%), repeating-conic-gradient(from -1deg, rgba(255,255,255,.72) 0 2deg, transparent 2deg 30deg); box-shadow: inset 0 0 18px rgba(0,0,0,.34); }
+.analog-clock::after { position: absolute; z-index: 0; inset: 6px; border-radius: 50%; background: rgba(16,17,24,.88); content: ""; }
+.clock-number { position: absolute; z-index: 1; color: #d7d8e0; font-size: 7px; font-weight: 700; }
+.number-12 { left: 50%; top: 9px; transform: translateX(-50%); }
+.number-3 { right: 10px; top: 50%; transform: translateY(-50%); }
+.number-6 { left: 50%; bottom: 8px; transform: translateX(-50%); }
+.number-9 { left: 10px; top: 50%; transform: translateY(-50%); }
+.hand { position: absolute; z-index: 2; left: 50%; bottom: 50%; width: 2px; border-radius: 999px; background: #fff; transform: translateX(-50%) rotate(0deg); transform-origin: 50% 100%; }
+.hour-hand { height: 22px; }
+.minute-hand { height: 31px; background: #ddd; }
+.second-hand { width: 1px; height: 34px; background: #ff566e; }
+.clock-pin { position: absolute; z-index: 3; left: 50%; top: 50%; width: 7px; height: 7px; border: 2px solid #fff; border-radius: 50%; background: #ff4f64; transform: translate(-50%,-50%); }
+.widget.is-analog { grid-template-columns: 128px minmax(0,1fr); }
+.widget.is-analog .clock { padding: 8px; text-align: center; }
+.widget.is-analog .clock small, .widget.is-analog #clock { display: none; }
+.widget.is-analog .analog-clock { display: block; }
+.widget.is-analog .brand-mark { left: 16px; top: 16px; width: 23px; height: 23px; border-radius: 7px; font-size: 11px; transform: none; }
+.widget.is-analog .timer { display: grid; align-content: center; }
+.widget.is-analog.clock-only { grid-template-columns: 1fr; }
 .alert { position: absolute; z-index: 2; inset: 5px; display: grid; place-items: center; border: 1px solid rgba(255,79,100,.8); border-radius: 11px; color: #fff; background: rgba(97,17,31,.96); font-size: 12px; font-weight: 800; letter-spacing: .08em; animation: shake .45s ease-in-out infinite alternate; }
 .alert[hidden] { display: none; }
 @keyframes shake { from { transform: translateX(-2px); } to { transform: translateX(2px); } }

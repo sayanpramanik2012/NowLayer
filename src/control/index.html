@@ -80,6 +80,10 @@
             <div><small>VIDEO PIP</small><strong id="captureStatus">Not active</strong><span id="captureDetail">Choose a browser or video-player window below.</span></div>
             <button id="stopCaptureButton" class="secondary-button icon-label-button" type="button" hidden><svg class="material-icon"><use href="../assets/material-icons.svg#stop"></use></svg>Stop PiP</button>
           </article>
+          <article class="panel pip-size-panel">
+            <div><h2>PiP size</h2><p>Choose a preset, or unlock the overlay and drag any window edge. NowLayer keeps the video at 16:9 and remembers your size.</p></div>
+            <select id="pipSizeSelect" aria-label="Video PiP size"><option value="320">Small · 320 × 180</option><option value="480">Medium · 480 × 270</option><option value="640">Large · 640 × 360</option><option value="custom">Custom size</option></select>
+          </article>
           <article class="panel source-panel">
             <div class="panel-heading"><div><h2>Choose a window</h2><p>For a clean result, open the YouTube video in its own browser window, then select that window.</p></div></div>
             <div id="sourceLoading" class="source-empty">Looking for open windows...</div>
@@ -120,6 +124,11 @@
           <header class="page-header"><div><p class="eyebrow">KEEP TIME IN GAME</p><h1>Clock, timer & alarm.</h1></div></header>
           <article class="panel settings-list">
             <label class="setting-row"><div><strong>Show clock on overlay</strong><span>A small local time display stays visible in music and Video PiP mode.</span></div><input id="clockToggle" type="checkbox" role="switch"></label>
+            <div class="setting-row"><div><strong>Clock design</strong><span>Analog clocks automatically use the separate floating widget.</span></div><select id="clockStyleSelect"><option value="digital">Digital</option><option value="analog">Analog</option></select></div>
+            <div class="setting-row"><div><strong>Digital time format</strong><span>Choose a familiar 12-hour clock or a compact 24-hour clock.</span></div><select id="clockFormatSelect"><option value="12">12 hour</option><option value="24">24 hour</option></select></div>
+            <label class="setting-row"><div><strong>Show seconds</strong><span>Add live seconds to the digital clock or a second hand to analog.</span></div><input id="clockSecondsToggle" type="checkbox" role="switch"></label>
+            <label class="setting-row slider-row"><div><strong>Clock opacity</strong><span>Control only the clock surface.</span></div><div class="slider-wrap"><input id="clockOpacitySlider" type="range" min="30" max="100" step="1"><output id="clockOpacityValue">94%</output></div></label>
+            <label class="setting-row slider-row"><div><strong>Timer opacity</strong><span>Control only the countdown surface.</span></div><div class="slider-wrap"><input id="timerOpacitySlider" type="range" min="30" max="100" step="1"><output id="timerOpacityValue">94%</output></div></label>
           </article>
           <div class="two-column timer-grid">
             <article class="panel">
@@ -133,7 +142,7 @@
               <button id="timerSoundButton" class="link-button" type="button">Choose custom timer sound</button><span id="timerSoundLabel" class="file-label">Default tone</span>
             </article>
             <article class="panel">
-              <p class="eyebrow">DAILY ALARM</p><h2 id="alarmReadout">Off</h2><p>Shows an overlay alert at the selected local time. Dismiss from Control Center or <kbd>Ctrl + Shift + A</kbd>.</p>
+              <p class="eyebrow">DAILY ALARM</p><h2 id="alarmReadout">Off</h2><p>Shows an overlay alert at the selected local time. Dismiss from Control Center or <kbd id="dismissShortcutHint">Ctrl + Shift + A</kbd>.</p>
               <label class="time-input">Alarm time<input id="alarmTime" type="time" value="07:00"></label>
               <label class="checkbox-line"><input id="alarmEnabledToggle" type="checkbox"> Enable daily alarm</label>
               <label class="checkbox-line"><input id="alarmSoundToggle" type="checkbox"> Play sound until dismissed</label>
@@ -152,9 +161,10 @@
             <label class="setting-row"><div><strong>Compact layout</strong><span>Use a smaller 420 x 76 media card. Video PiP always uses 480 x 270.</span></div><input id="compactToggle" type="checkbox" role="switch"></label>
             <label class="setting-row"><div><strong>Show play/pause on Video PiP</strong><span>Display one floating media button over the captured video.</span></div><input id="pipControlsToggle" type="checkbox" role="switch"></label>
             <div class="setting-row"><div><strong>PiP button position</strong><span>Choose which corner holds the floating play/pause button.</span></div><select id="pipControlPositionSelect" aria-label="PiP button position"><option value="top-right">Top right</option><option value="top-left">Top left</option><option value="bottom-right">Bottom right</option><option value="bottom-left">Bottom left</option></select></div>
-            <label class="setting-row slider-row"><div><strong>Panel opacity</strong><span>Adjust the overlay background from subtle to solid.</span></div><div class="slider-wrap"><input id="opacitySlider" type="range" min="45" max="100" step="1"><output id="opacityValue">94%</output></div></label>
+            <label class="setting-row slider-row"><div><strong>Media overlay opacity</strong><span>Adjust only the music and now-playing card.</span></div><div class="slider-wrap"><input id="mediaOpacitySlider" type="range" min="30" max="100" step="1"><output id="mediaOpacityValue">94%</output></div></label>
+            <label class="setting-row slider-row"><div><strong>Video PiP opacity</strong><span>Adjust only the captured video window.</span></div><div class="slider-wrap"><input id="videoOpacitySlider" type="range" min="30" max="100" step="1"><output id="videoOpacityValue">100%</output></div></label>
           </article>
-          <article class="panel hotkey-panel"><h2>Your hotkeys</h2><p>Use combinations such as <kbd>Ctrl + Shift + M</kbd>. NowLayer checks whether a shortcut is already taken.</p><label><span>Show / hide media overlay</span><input id="visibilityHotkeyInput" class="hotkey-input" type="text" spellcheck="false"></label><label><span>Lock / unlock interaction</span><input id="lockHotkeyInput" class="hotkey-input" type="text" spellcheck="false"></label><label><span>Dismiss timer or alarm</span><input id="dismissHotkeyInput" class="hotkey-input" type="text" spellcheck="false"></label><p id="hotkeyMessage" class="copy-confirmation" role="status"></p></article>
+          <article class="panel hotkey-panel"><h2>Your hotkeys</h2><p>Click a shortcut, then press the keys you want together. Press Escape to cancel.</p><button id="visibilityHotkeyInput" class="hotkey-recorder" type="button"><span>Show / hide media overlay</span><kbd>Ctrl + Shift + M</kbd></button><button id="lockHotkeyInput" class="hotkey-recorder" type="button"><span>Lock / unlock interaction</span><kbd>Ctrl + Shift + L</kbd></button><button id="dismissHotkeyInput" class="hotkey-recorder" type="button"><span>Dismiss timer or alarm</span><kbd>Ctrl + Shift + A</kbd></button><p id="hotkeyMessage" class="copy-confirmation" role="status"></p></article>
           <button id="resetButton" class="danger-button" type="button">Reset NowLayer settings</button>
         </section>
 
@@ -166,7 +176,7 @@
               <li><strong>Start media:</strong> Play a song in Spotify, Chrome, Edge, Firefox, or VLC.</li>
               <li><strong>Check metadata:</strong> Its title should appear on Home and on the overlay.</li>
               <li><strong>Check safe input:</strong> While locked, click through the overlay into the app below it.</li>
-              <li><strong>Check interaction:</strong> Press Ctrl+Shift+L and use play/pause.</li>
+              <li><strong>Check interaction:</strong> Press <kbd id="lockShortcutHint">Ctrl + Shift + L</kbd> and use play/pause.</li>
               <li><strong>Check video:</strong> Select an open YouTube window under Video PiP.</li>
               <li><strong>Check a game:</strong> Start a borderless-windowed game and confirm the overlay remains visible.</li>
             </ol>
