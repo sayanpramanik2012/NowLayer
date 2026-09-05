@@ -88,7 +88,7 @@ See [docs/RELEASING.md](docs/RELEASING.md) for versioning and GitHub Release aut
 
 ## Performance acceptance checks
 
-- Enable Performance with no optional tools: CPU and RAM update; FPS, temperatures
+- Enable Performance with no optional tools: CPU and RAM update; FPS follows the foreground app when capture permissions allow it; temperatures
   and unsupported GPU fields clearly remain unavailable.
 - Follow [performance setup](docs/PERFORMANCE.md), then compare FPS with PresentMon
   for the same game process. Stop the game and confirm old FPS is cleared.
@@ -102,3 +102,12 @@ See [docs/RELEASING.md](docs/RELEASING.md) for versioning and GitHub Release aut
 - Check the website's mobile menu, keyboard-operated overlay tabs, release download
   links, and FAQ. If the GitHub API is unavailable, download links should still
   open GitHub's latest release page.
+
+### Version 1.1.0 acceptance
+
+- On Home, toggle each feature and verify both the real window and its customization-page preference. Media off must leave performance visible. Hide all must hide the time widget too; alarms/countdowns keep their schedule.
+- Select/cancel a Video PiP window from Home; turn media on to exit PiP.
+- Cycle all three performance layouts and themes, move to a screen edge, and restart. Verify saved choices and 34-pixel strip height (before Windows scaling).
+- Install on Windows without any separate PresentMon installation. Enable Performance, switch between two games, then desktop. Verify process isolation and stale FPS clearing. Check permission errors appear in Control Center.
+- Play Spotify and YouTube Music with/without supplied thumbnails. Verify actual art, title/time/buttons, and no N placeholder or empty image slot.
+- Confirm the installer contains resources/presentmon/PresentMon.exe and LICENSE.txt, with the pinned hash. Test a fresh install and upgrade to 1.1.0.

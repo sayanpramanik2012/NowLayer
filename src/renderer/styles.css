@@ -489,3 +489,8 @@ button:disabled {
   z-index: 4;
   inset: 0;
 }
+
+/* No artwork slot is reserved until a real thumbnail loads. */
+.overlay:not(.is-video) .card:not(:has(.artwork.has-image)) { grid-template-columns: minmax(0, 1fr); }
+.artwork:not(.has-image) { display: none; }
+.overlay:not(.is-video) .card:not(:has(.artwork.has-image)) .content { padding-left: 14px; }

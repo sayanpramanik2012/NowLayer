@@ -9,7 +9,6 @@ const elements = {
   pipPlayIcon: document.getElementById('pipPlayIcon'),
   artwork: document.getElementById('artwork'),
   artworkImage: document.getElementById('artworkImage'),
-  artworkFallback: document.getElementById('artworkFallback'),
   title: document.getElementById('title'),
   subtitle: document.getElementById('subtitle'),
   source: document.getElementById('source'),
@@ -294,8 +293,6 @@ function render(nextState) {
   } else {
     elements.artworkImage.removeAttribute('src');
     elements.artwork.classList.remove('has-image');
-    const initial = (media.title || 'N').trim().charAt(0).toUpperCase();
-    elements.artworkFallback.textContent = initial || 'N';
   }
 
   synchronizeVideo(video);

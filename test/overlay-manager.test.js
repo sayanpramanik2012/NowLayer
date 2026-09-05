@@ -133,3 +133,26 @@ test('separate time widget follows the same game-safe click-through mode', () =>
   assert.deepEqual(calls.focusable.at(-1), [false]);
   assert.equal(calls.showInactive, 1);
 });
+
+test('media can be disabled independently and video can still show', () => {
+  const manager = createManager();
+  const calls = attachWindow(manager);
+  manager.updateSettings({ mediaEnabled: false, performance: { enabled: true } });
+  assert.equal(calls.hide, 1);
+  manager.showDesktopWindow();
+  assert.equal(calls.showInactive, 0);
+  assert.equal(manager.settings.performance.enabled, true);
+  manager.setVideoMode(true);
+  assert.equal(calls.showInactive, 1);
+  manager.setVideoMode(false);
+  assert.equal(calls.hide, 2);
+});
+
+test('hide all includes the independent clock and timer window', () => {
+  const manager = createManager();
+  attachWindow(manager);
+  let hidden = 0;
+  manager.utilityWindow = { isDestroyed: () => false, hide: () => hidden++, webContents: { isDestroyed: () => false, send() {} } };
+  manager.updateSettings({ visible: false, utilities: { displayMode: 'separate', showClock: true } });
+  assert.equal(hidden, 1);
+});

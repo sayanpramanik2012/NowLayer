@@ -68,5 +68,15 @@ Copyright © Sayan Pramanik. All rights reserved.
 
 NowLayer also includes a separate FPS, CPU, GPU, temperature, RAM, and VRAM widget.
 Enable it in **Performance** in Control Center. CPU and RAM work immediately; game
-FPS requires PresentMon Console, and hardware temperatures require supported
+FPS capture is bundled and follows the foreground app. Hardware temperatures require supported
 sensor providers. See [setup and data-source details](docs/PERFORMANCE.md).
+
+## New in 1.1.0
+
+- Home centralizes media, performance, Video PiP, clock, countdown, and alarm switches, with direct customization links.
+- Performance defaults to a 560 × 34 strip, with compact/detailed layouts and Graphite/Midnight/Minimal HUD themes.
+- PresentMon Console is bundled and integrity-checked during builds; users do not install or locate it. Windows capture permissions still apply.
+- Real Windows media thumbnails are displayed when supplied; missing artwork no longer reserves a placeholder.
+- The website includes an interactive layout/theme preview and updated setup guidance.
+
+Media and Video PiP share one overlay. Turning media on stops PiP; stopping PiP restores media if enabled. Home clock/countdown switches can enable a separate time widget. Hiding a countdown does not cancel it, and hiding overlays does not disable alarms.

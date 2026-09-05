@@ -14,7 +14,6 @@ const elements = {
   inputDetail: document.getElementById('inputDetail'),
   controlArtwork: document.getElementById('controlArtwork'),
   controlArtworkImage: document.getElementById('controlArtworkImage'),
-  controlArtworkFallback: document.getElementById('controlArtworkFallback'),
   controlTitle: document.getElementById('controlTitle'),
   controlArtist: document.getElementById('controlArtist'),
   quickPrevious: document.getElementById('quickPrevious'),
@@ -248,7 +247,7 @@ function render(nextState) {
   const playing = String(media.status).toLowerCase() === 'playing';
 
   elements.welcomeCard.hidden = settings.onboardingComplete === true;
-  elements.visibilityButton.textContent = settings.visible === false ? 'Show overlay' : 'Hide overlay';
+  elements.visibilityButton.textContent = settings.visible === false ? 'Show all overlays' : 'Hide all overlays';
   elements.visibleToggle.checked = settings.visible !== false;
   elements.lockedToggle.checked = settings.locked !== false;
   elements.compactToggle.checked = settings.compact === true;
@@ -322,7 +321,6 @@ function render(nextState) {
   } else {
     elements.controlArtworkImage.removeAttribute('src');
     elements.controlArtwork.classList.remove('has-image');
-    elements.controlArtworkFallback.textContent = (media.title || 'N').trim().charAt(0).toUpperCase() || 'N';
   }
 
   elements.captureStatus.textContent = video.active ? 'PiP active' : 'Not active';

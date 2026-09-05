@@ -1,12 +1,18 @@
 (() => {
-  const ids = ['performanceOpacity', 'performanceOpacityValue', 'performanceEnabled', 'performanceAnchor', 'performanceGpu', 'performanceFps', 'performanceFrameTime', 'performanceCpu', 'performanceCpuTemp', 'performanceGpuUsage', 'performanceGpuTemp', 'performanceRam', 'performanceVram', 'performanceStatus', 'performanceGpuSource', 'choosePresentMon', 'presentMonName', 'performanceProcess', 'savePerformanceProcess', 'performanceMessage'];
+  const ids = ['performanceLayout', 'performanceTheme', 'performancePreview', 'performancePreviewLabel', 'performanceOpacity', 'performanceOpacityValue', 'performanceEnabled', 'performanceAnchor', 'performanceGpu', 'performanceFps', 'performanceFrameTime', 'performanceCpu', 'performanceCpuTemp', 'performanceGpuUsage', 'performanceGpuTemp', 'performanceRam', 'performanceVram', 'performanceStatus', 'performanceGpuSource', 'performanceProcess', 'savePerformanceProcess', 'performanceMessage'];
   const ui = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
+  const preview = window.NowLayerPerformanceView.mount(ui.performancePreview);
   let config = {}, latest = null, gpuOptions = '';
   const format = (number, suffix = '', digits = 0) => Number.isFinite(number) ? `${number.toFixed(digits)}${suffix}` : '—';
 
   function renderMetrics(stats) {
     latest = stats;
     const data = stats && Date.now() - stats.sampledAt < 4000 ? stats : {};
+    const example = !Number.isFinite(data.cpuUsage);
+    preview.configure(config);
+    preview.render(example ? { sampledAt: Date.now(), fps: 144, frameTime: 6.9, cpuUsage: 32, cpuTemperature: 58, gpu: { usage: 87, temperature: 67, memoryUsedMb: 4096 }, ramUsedGb: 12.4, ramTotalGb: 32 } : data, example);
+    const size = window.NowLayerPerformanceLayout.dimensions(config.layout);
+    ui.performancePreviewLabel.textContent = `${example ? 'Example' : 'Live'} preview · ${size.width} × ${size.height} · actual size (scroll if needed)`;
     ui.performanceFps.textContent = format(data.fps);
     ui.performanceFrameTime.textContent = Number.isFinite(data.frameTime) ? format(data.frameTime, ' ms', 1) : 'No frames';
     ui.performanceCpu.textContent = format(data.cpuUsage, '%');
@@ -32,10 +38,12 @@
     config = state.settings?.performance || {};
     if (document.activeElement !== ui.performanceOpacity) ui.performanceOpacity.value = String(Math.round((config.opacity ?? .94) * 100));
     ui.performanceOpacityValue.textContent = `${ui.performanceOpacity.value}%`;
+    ui.performanceLayout.value = config.layout || 'strip';
+    ui.performanceTheme.value = config.theme || 'graphite';
+    ui.performanceOpacity.disabled = config.theme === 'minimal';
+    ui.performanceOpacity.title = config.theme === 'minimal' ? 'The Minimal HUD has no background.' : '';
     ui.performanceEnabled.checked = config.enabled === true;
     ui.performanceAnchor.value = config.anchor || 'top-left';
-    ui.presentMonName.textContent = config.presentMonPath ? config.presentMonPath.split(/[\\/]/).at(-1) : 'Not configured';
-    ui.presentMonName.title = config.presentMonPath || '';
     if (document.activeElement !== ui.performanceProcess) ui.performanceProcess.value = config.processName || '';
     if (!state.settings?.visible && config.enabled) ui.performanceMessage.textContent = 'Monitoring paused: show the overlay to resume.';
     else if (ui.performanceMessage.textContent.startsWith('Monitoring paused:')) ui.performanceMessage.textContent = '';
@@ -48,6 +56,8 @@
       ui.performanceMessage.textContent = '';
     } catch (error) { ui.performanceMessage.textContent = error.message; }
   }
+  ui.performanceLayout.addEventListener('change', () => update({ layout: ui.performanceLayout.value }));
+  ui.performanceTheme.addEventListener('change', () => update({ theme: ui.performanceTheme.value }));
   ui.performanceOpacity.addEventListener('input', () => { ui.performanceOpacityValue.textContent = `${ui.performanceOpacity.value}%`; });
   ui.performanceOpacity.addEventListener('change', () => update({ opacity: Number(ui.performanceOpacity.value) / 100 }));
   ui.performanceEnabled.addEventListener('change', () => update({ enabled: ui.performanceEnabled.checked }));
@@ -59,9 +69,6 @@
       ui.performanceMessage.textContent = 'Enter an executable name such as game.exe, without a folder path.'; return;
     }
     update({ processName: name });
-  });
-  ui.choosePresentMon.addEventListener('click', async () => {
-    try { await window.nowLayer.choosePresentMon(); } catch (error) { ui.performanceMessage.textContent = error.message; }
   });
   window.nowLayer.onState(renderState);
   window.nowLayer.onPerformance(renderMetrics);

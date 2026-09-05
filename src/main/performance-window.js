@@ -1,5 +1,6 @@
 const { EventEmitter } = require('node:events');
 const { calculateAnchoredBounds } = require('./config');
+const { dimensions } = require('../shared/performance-layout');
 
 class PerformanceWindow extends EventEmitter {
   constructor({ app, BrowserWindow, screen, rendererPath, preloadPath }) {
@@ -13,9 +14,10 @@ class PerformanceWindow extends EventEmitter {
     this.settings = settings;
     const config = settings.performance;
     if (!config.enabled || !settings.visible) { this.window?.hide(); return; }
+    const size = dimensions(config.layout);
     if (!this.window) {
       const window = new this.BrowserWindow({
-        width: 300, height: 186, title: 'NowLayer Performance', frame: false, transparent: true,
+        ...size, title: 'NowLayer Performance', frame: false, transparent: true,
         backgroundColor: '#00000000', resizable: false, movable: true, focusable: !settings.locked,
         show: false, skipTaskbar: true, alwaysOnTop: true, hasShadow: false,
         fullscreenable: false, maximizable: false, minimizable: false,
@@ -36,8 +38,8 @@ class PerformanceWindow extends EventEmitter {
     const window = this.window;
     const display = this.screen.getDisplayNearestPoint({ x: config.x ?? 0, y: config.y ?? 0 });
     const bounds = calculateAnchoredBounds(display.workArea, {
-      ...settings, anchor: config.anchor, bounds: { x: config.x, y: config.y, width: 300 },
-    }, { width: 300, height: 186 });
+      ...settings, anchor: config.anchor, bounds: { x: config.x, y: config.y, width: size.width },
+    }, size);
     const key = JSON.stringify(bounds);
     if (key !== this.positionKey) {
       this.positionKey = key;

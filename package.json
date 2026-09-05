@@ -1,6 +1,6 @@
 {
   "name": "nowlayer",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A distraction-free media and video PiP overlay for Windows gamers.",
   "main": "src/main/index.js",
   "author": {
@@ -20,11 +20,15 @@
     "start": "electron .",
     "dev": "electron . --remote-debugging-port=9222",
     "doctor": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/doctor.ps1",
-    "check": "node --check src/main/performance-settings.js && node --check src/main/performance-monitor.js && node --check src/main/performance-window.js && node --check src/performance/app.js && node --check src/control/performance.js && node --check src/main/index.js && node --check src/main/config.js && node --check src/main/timekeeper.js && node --check src/main/media-monitor.js && node --check src/main/overlay-manager.js && node --check src/main/video-capture.js && node --check src/preload/index.js && node --check src/shared/media-timeline.js && node --check src/renderer/app.js && node --check src/utility/app.js && node --check src/control/app.js && node --check site/script.js && node --check test/config.test.js && node --check test/timekeeper.test.js && node --check test/media-monitor.test.js && node --check test/media-timeline.test.js && node --check test/overlay-manager.test.js && node --check test/video-capture.test.js && node --check test/ui-contract.test.js && node --check test/site.test.js",
+    "check": "node --check src/control/home.js && node --check scripts/prepare-presentmon.js && node --check src/shared/performance-layout.js && node --check src/shared/performance-view.js && node --check src/main/performance-settings.js && node --check src/main/performance-monitor.js && node --check src/main/performance-window.js && node --check src/performance/app.js && node --check src/control/performance.js && node --check src/main/index.js && node --check src/main/config.js && node --check src/main/timekeeper.js && node --check src/main/media-monitor.js && node --check src/main/overlay-manager.js && node --check src/main/video-capture.js && node --check src/preload/index.js && node --check src/shared/media-timeline.js && node --check src/renderer/app.js && node --check src/utility/app.js && node --check src/control/app.js && node --check site/script.js && node --check test/config.test.js && node --check test/timekeeper.test.js && node --check test/media-monitor.test.js && node --check test/media-timeline.test.js && node --check test/overlay-manager.test.js && node --check test/video-capture.test.js && node --check test/ui-contract.test.js && node --check test/site.test.js",
     "test": "node --test",
     "build": "npm run check && npm test",
     "pack": "npm run build && electron-builder --dir --publish never",
-    "dist": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/build-installer.ps1"
+    "dist": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/build-installer.ps1",
+    "prepare:fps": "node scripts/prepare-presentmon.js",
+    "prestart": "npm run prepare:fps",
+    "predev": "npm run prepare:fps",
+    "prebuild": "npm run prepare:fps"
   },
   "devDependencies": {
     "electron": "43.2.0",
@@ -52,6 +56,14 @@
         "filter": [
           "media-*.ps1",
           "performance-*.ps1"
+        ]
+      },
+      {
+        "from": "vendor/presentmon",
+        "to": "presentmon",
+        "filter": [
+          "PresentMon.exe",
+          "LICENSE.txt"
         ]
       }
     ],

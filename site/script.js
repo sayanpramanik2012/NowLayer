@@ -89,3 +89,9 @@ document.addEventListener('click', event => {
   if (!siteNav?.contains(event.target) && !menuButton?.contains(event.target)) closeMenu();
 });
 loadLatestRelease();
+
+for (const [id, key] of [['demoLayout', 'layout'], ['demoTheme', 'theme']]) {
+  document.getElementById(id)?.addEventListener('change', event => {
+    document.getElementById('statsDemo').dataset[key] = event.target.value;
+  });
+}

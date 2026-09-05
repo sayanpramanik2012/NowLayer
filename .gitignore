@@ -9,3 +9,5 @@ dist/
 .DS_Store
 Thumbs.db
 .vscode/settings.json
+vendor/presentmon/PresentMon.exe
+vendor/presentmon/*.download
