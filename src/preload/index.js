@@ -1,7 +1,6 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('nowLayer', Object.freeze({
-  choosePresentMon: () => ipcRenderer.invoke('nowlayer:choose-presentmon'),
   onPerformance: (callback) => {
     const listener = (_event, state) => callback(state);
     ipcRenderer.on('nowlayer:performance', listener);

@@ -144,7 +144,7 @@ do {
         $lastArtworkAttempt = 0L
       }
 
-      $nowTick = [Environment]::TickCount64
+      $nowTick = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
       if ([string]::IsNullOrWhiteSpace($cachedArtwork) -and
           ($nowTick - $lastArtworkAttempt) -ge 2000) {
         $lastArtworkAttempt = $nowTick

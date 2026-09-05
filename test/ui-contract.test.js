@@ -25,6 +25,7 @@ test('overlay script only references elements that exist', () => {
 
 test('control center script only references elements that exist', () => {
   assertJavaScriptIdsExist('src/control/index.html', 'src/control/app.js');
+  assertJavaScriptIdsExist('src/control/index.html', 'src/control/home.js');
 });
 
 test('renderer pages enforce a restrictive content security policy', () => {

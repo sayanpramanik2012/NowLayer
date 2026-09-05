@@ -5,20 +5,25 @@ const { PassThrough } = require('node:stream');
 const { normalizePerformance } = require('../src/main/performance-settings');
 const { sanitizeSettings } = require('../src/main/config');
 const { PerformanceMonitor, FrameAccumulator, cpuTotals, cpuUsage, parseCsv, parseNvidia, parseSensors } = require('../src/main/performance-monitor');
+const { dimensions } = require('../src/shared/performance-layout');
 const { PerformanceWindow } = require('../src/main/performance-window');
 
 test('performance preferences survive old settings and reject invalid executable inputs', () => {
   assert.equal(sanitizeSettings({}).performance.enabled, false);
+  assert.equal(sanitizeSettings({ performance: { enabled: true } }).performance.layout, 'strip');
+  assert.equal(normalizePerformance({ layout: 'invalid', theme: 'invalid' }).theme, 'graphite');
+  assert.equal(normalizePerformance({ layout: '__proto__' }).layout, 'strip');
+  assert.equal(normalizePerformance({ layout: 'compact', theme: 'minimal' }).layout, 'compact');
   assert.equal(normalizePerformance(null).enabled, false);
   const settings = normalizePerformance({ enabled: true, presentMonPath: 'C:\\Tools\\PresentMon.exe', processName: 'My Game.exe', opacity: 0, x: 120.6 });
-  assert.equal(settings.presentMonPath, 'C:\\Tools\\PresentMon.exe');
+  assert.equal(settings.presentMonPath, undefined);
   assert.equal(settings.processName, 'My Game.exe');
   assert.equal(settings.opacity, .3);
   assert.equal(settings.x, 121);
   for (const invalid of ['game', '--help.exe', 'C:\\Game\\game.exe', 'game.exe\n--help', 'x/../game.exe']) {
     assert.equal(normalizePerformance({ processName: invalid }).processName, '');
   }
-  assert.equal(normalizePerformance({ presentMonPath: 'cmd.exe' }).presentMonPath, '');
+  assert.equal(normalizePerformance({ presentMonPath: 'cmd.exe' }).presentMonPath, undefined);
 });
 
 test('CPU usage uses system-wide time deltas and handles zero/reset intervals', () => {
@@ -74,7 +79,7 @@ function fakeChild() {
 
 test('monitor does not spawn when disabled, cleans owned processes, and rejects late results', () => {
   const children = [], executions = [];
-  const monitor = new PerformanceMonitor({ sensorScript: 'sensors.ps1', platform: 'win32',
+  const monitor = new PerformanceMonitor({ sensorScript: 'sensors.ps1', presentMonPath: 'C:\\Bundled\\PresentMon.exe', platform: 'win32',
     spawnProcess: (file, args) => { const child = fakeChild(); children.push({ file, args, child }); return child; },
     execute: (file, args, options, callback) => { const child = fakeChild(); executions.push({ file, args, options, callback, child }); return child; },
   });
@@ -83,7 +88,7 @@ test('monitor does not spawn when disabled, cleans owned processes, and rejects 
   monitor.configure({ enabled: true, presentMonPath: 'C:\\Tools\\PresentMon.exe', processName: 'game.exe' });
   assert.equal(children.length, 2);
   const originalChildren = children.length;
-  monitor.configure({ ...monitor.settings, opacity: .5, x: 200 });
+  monitor.configure({ ...monitor.settings, opacity: .5, x: 200, layout: 'compact', theme: 'midnight' });
   assert.equal(children.length, originalChildren, 'presentation changes must not restart collection');
   const query = executions.find(call => call.file === 'nvidia-smi.exe');
   monitor.stop();
@@ -118,6 +123,12 @@ test('performance window stays click-through, respects visibility and retains dr
   const manager = new PerformanceWindow({ app: {}, BrowserWindow: Window, screen: { getDisplayNearestPoint: () => ({ workArea: { x: 0, y: 0, width: 1920, height: 1080 } }) } });
   const settings = sanitizeSettings({ performance: { enabled: true } });
   manager.apply(settings);
+  assert.equal(manager.window.bounds.height, 34);
+  assert.equal(manager.window.bounds.width, 560);
+  manager.apply({ ...settings, performance: { ...settings.performance, layout: 'compact', anchor: 'bottom-right' } });
+  assert.equal(manager.window.bounds.height, 64);
+  assert.equal(manager.window.bounds.y, 1080 - 24 - 64);
+  assert.deepEqual(dimensions('detailed'), { width: 300, height: 140 });
   assert.equal(manager.window.ignored, true);
   assert.equal(manager.window.focusable, false);
   assert.equal(manager.window.visible, true);
@@ -138,4 +149,53 @@ test('Windows sensor helper parses under Windows PowerShell', { skip: process.pl
   const path = require('node:path');
   const script = path.resolve(__dirname, '../scripts/performance-sensors.ps1').replace(/'/g, "''");
   execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', `$tokens=$null; $errors=$null; [System.Management.Automation.Language.Parser]::ParseFile('${script}', [ref]$tokens, [ref]$errors) | Out-Null; if ($errors.Count) { $errors | Out-String | Write-Error; exit 1 }`], { timeout: 10000 });
+});
+
+test('automatic FPS changes PID atomically and never merges same-named processes', () => {
+  const frames = new FrameAccumulator();
+  frames.add('Application,ProcessID,SwapChainAddress,MsBetweenPresents');
+  frames.add('game.exe,10,a,10');
+  assert.equal(frames.sample().fps, null);
+  frames.setTarget('game.exe', 10);
+  frames.add('game.exe,10,a,10');
+  frames.setTarget('game.exe', 11);
+  frames.add('game.exe,10,a,10');
+  frames.add('game.exe,11,a,20');
+  assert.equal(frames.sample().fps, 50);
+  frames.setTarget('');
+  frames.add('game.exe,11,a,20');
+  assert.equal(frames.sample().fps, null);
+});
+
+test('foreground capture keeps game while Control Center is focused and clears desktop/stale targets', () => {
+  const monitor = new PerformanceMonitor({ sensorScript: '', platform: 'linux' });
+  monitor.configure({ enabled: true });
+  try {
+    monitor.updateForeground({ foregroundProcessId: 12, foregroundProcessName: 'Game.exe' });
+    monitor.updateForeground({ foregroundProcessId: 13, foregroundProcessName: 'NowLayer.exe' });
+    assert.equal(monitor.frames.processId, 12);
+    monitor.updateForeground({ foregroundProcessId: 14, foregroundProcessName: 'explorer.exe' });
+    assert.equal(monitor.frames.processName, '');
+    monitor.updateForeground({ foregroundProcessId: 12, foregroundProcessName: 'Game.exe' });
+    monitor.sensorAt = Date.now() - 7000;
+    monitor.tick();
+    assert.equal(monitor.frames.processName, '');
+  } finally { monitor.stop(); }
+});
+
+test('Windows build includes the pinned standalone FPS helper and license', { skip: process.platform !== 'win32' }, () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const { spawnSync } = require('node:child_process');
+  const { SHA256, destination, digest } = require('../scripts/prepare-presentmon');
+  assert.equal(digest(fs.readFileSync(destination)), SHA256);
+  assert.match(fs.readFileSync(path.join(path.dirname(destination), 'LICENSE.txt'), 'utf8'), /Permission is hereby granted/);
+  // PresentMon 2.3.1 deliberately prints help on stderr and returns 1.
+  const result = spawnSync(destination, ['--help'], { encoding: 'utf8', timeout: 10000 });
+  assert.equal(result.error, undefined);
+  assert.equal(result.status, 1);
+  const help = result.stderr;
+  assert.match(help, /^PresentMon 2\.3\.1/);
+  assert.match(help, /v1_metrics/);
+  assert.match(help, /process_name/);
 });

@@ -61,7 +61,10 @@ const overlayManager = new OverlayManager({
   preloadPath,
 });
 
-const performanceMonitor = new PerformanceMonitor({ sensorScript: path.join(scriptsPath, 'performance-sensors.ps1') });
+const performanceMonitor = new PerformanceMonitor({
+  sensorScript: path.join(scriptsPath, 'performance-sensors.ps1'),
+  presentMonPath: app.isPackaged ? path.join(process.resourcesPath, 'presentmon', 'PresentMon.exe') : path.join(__dirname, '..', '..', 'vendor', 'presentmon', 'PresentMon.exe'),
+});
 const performanceWindow = new PerformanceWindow({ app, BrowserWindow, screen, preloadPath, rendererPath: path.join(__dirname, '..', 'performance', 'index.html') });
 
 let settingsPath = '';
@@ -287,6 +290,7 @@ ipcMain.handle('nowlayer:set-setting', (_event, key, value) => {
   const allowed = new Set([
     'onboardingComplete',
     'visible',
+    'mediaEnabled',
     'locked',
     'compact',
     'showPipControls',
@@ -302,11 +306,11 @@ ipcMain.handle('nowlayer:set-setting', (_event, key, value) => {
   ]);
   if (!allowed.has(key)) throw new Error('Unsupported setting.');
   if (key === 'performance') {
-    // Executable selection is restricted to the Control Center's native picker.
+    // Only Control Center may change the capture target.
     if (!controlWindow || _event.sender !== controlWindow.webContents) throw new Error('Open Control Center to change performance settings.');
     const patch = value && typeof value === 'object' ? value : {};
     const previous = overlayManager.settings.performance;
-    return overlayManager.updateSettings({ performance: { ...previous, ...patch, presentMonPath: previous.presentMonPath } });
+    return overlayManager.updateSettings({ performance: { ...previous, ...patch } });
   }
   if (key === 'utilities') {
     timekeeper.update(value);
@@ -322,14 +326,6 @@ ipcMain.handle('nowlayer:set-setting', (_event, key, value) => {
     return overlayManager.updateSettings({ hotkeys: requested });
   }
   return overlayManager.updateSettings({ [key]: value });
-});
-
-ipcMain.handle('nowlayer:choose-presentmon', async (event) => {
-  if (!controlWindow || event.sender !== controlWindow.webContents) throw new Error('Open Control Center to choose PresentMon.');
-  const result = await dialog.showOpenDialog(controlWindow, { title: 'Choose PresentMon Console executable (2.x or later)', properties: ['openFile'], filters: [{ name: 'PresentMon Console', extensions: ['exe'] }] });
-  if (result.canceled || !result.filePaths[0]) return null;
-  overlayManager.updateSettings({ performance: { ...overlayManager.settings.performance, presentMonPath: result.filePaths[0] } });
-  return overlayManager.settings;
 });
 
 ipcMain.handle('nowlayer:hotkey-capture', (_event, active) => {

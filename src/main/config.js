@@ -49,6 +49,7 @@ function sanitizeHotkeys(candidate = {}) {
 const DEFAULT_SETTINGS = Object.freeze({
   onboardingComplete: false,
   visible: true,
+  mediaEnabled: true,
   locked: true,
   compact: false,
   showPipControls: true,
@@ -110,6 +111,7 @@ function sanitizeSettings(candidate = {}) {
   return {
     onboardingComplete: candidate.onboardingComplete === true,
     visible: candidate.visible !== false,
+    mediaEnabled: candidate.mediaEnabled !== false,
     locked: candidate.locked !== false,
     compact: candidate.compact === true,
     showPipControls: candidate.showPipControls !== false,

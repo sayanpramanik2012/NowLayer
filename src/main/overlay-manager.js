@@ -65,7 +65,7 @@ class OverlayManager extends EventEmitter {
 
     window.once('ready-to-show', () => {
       this.applySettings();
-      if (this.settings.visible) window.showInactive();
+      if (this.settings.visible && (this.videoMode || this.settings.mediaEnabled)) window.showInactive();
     });
 
     window.on('moved', () => {
@@ -180,7 +180,7 @@ class OverlayManager extends EventEmitter {
     }
     this.positionDesktopWindow();
 
-    if (!this.settings.visible) {
+    if (!this.settings.visible || (!this.videoMode && !this.settings.mediaEnabled)) {
       window.hide();
     } else {
       window.showInactive();
@@ -194,7 +194,7 @@ class OverlayManager extends EventEmitter {
   applyUtilityWindow() {
     const utilities = this.settings.utilities || {};
     const timer = utilities.timer || {};
-    const shouldShow = utilities.displayMode === 'separate' && utilities.widgetVisible !== false
+    const shouldShow = this.settings.visible && utilities.displayMode === 'separate' && utilities.widgetVisible !== false
       && (utilities.showClock || utilities.showTimer !== false);
     if (!shouldShow) {
       if (this.utilityWindow && !this.utilityWindow.isDestroyed()) this.utilityWindow.hide();
@@ -238,7 +238,7 @@ class OverlayManager extends EventEmitter {
   }
 
   showDesktopWindow() {
-    if (!this.settings.visible) return;
+    if (!this.settings.visible || (!this.videoMode && !this.settings.mediaEnabled)) return;
     const window = this.createDesktopWindow();
     if (!window.isDestroyed()) {
       this.keepOnTop();

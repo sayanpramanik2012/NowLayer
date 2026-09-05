@@ -66,13 +66,19 @@ function parseSensors(data = {}) {
 
 // Keep each swap chain separate: summing them would inflate a game's FPS.
 class FrameAccumulator {
-  constructor(processName) { this.processName = processName.toLowerCase(); this.header = []; this.chains = new Map(); }
+  constructor(processName = '') { this.header = []; this.chains = new Map(); this.setTarget(processName); }
+  setTarget(name = '', pid = null) {
+    name = name.toLowerCase();
+    if (this.processName !== name || this.processId !== pid) this.chains.clear();
+    this.processName = name; this.processId = pid;
+  }
   add(line) {
     const fields = parseCsv(line.replace(/^\uFEFF/, ''));
     if (fields.includes('Application') && fields.includes('MsBetweenPresents')) { this.header = fields; return; }
     if (!this.header.length) return;
     const get = key => fields[this.header.indexOf(key)];
-    if (get('Application')?.toLowerCase() !== this.processName) return;
+    if (!this.processName || get('Application')?.toLowerCase() !== this.processName) return;
+    if (this.processId !== null && Number(get('ProcessID')) !== this.processId) return;
     const interval = numberOrNull(get('MsBetweenPresents'), 60_000);
     if (!interval) return;
     const key = `${get('ProcessID')}:${get('SwapChainAddress')}`;
@@ -90,9 +96,9 @@ class FrameAccumulator {
 }
 
 class PerformanceMonitor extends EventEmitter {
-  constructor({ sensorScript, platform = process.platform, spawnProcess = spawn, execute = execFile, system = os }) {
+  constructor({ sensorScript, presentMonPath = '', platform = process.platform, spawnProcess = spawn, execute = execFile, system = os }) {
     super();
-    Object.assign(this, { sensorScript, platform, spawnProcess, execute, system });
+    Object.assign(this, { sensorScript, presentMonPath, platform, spawnProcess, execute, system });
     this.settings = normalizePerformance();
     this.timer = null;
     this.sensorChild = null;
@@ -107,7 +113,7 @@ class PerformanceMonitor extends EventEmitter {
   }
   configure(settings) {
     const next = normalizePerformance(settings);
-    const restart = !this.timer || next.presentMonPath !== this.settings.presentMonPath || next.processName !== this.settings.processName;
+    const restart = !this.timer || next.processName !== this.settings.processName;
     this.settings = next;
     if (!next.enabled) { if (this.timer) this.stop(); return; }
     if (!restart) return;
@@ -121,16 +127,16 @@ class PerformanceMonitor extends EventEmitter {
     this.nextNvidiaAttempt = 0;
     this.frames = new FrameAccumulator(next.processName);
     this.fpsStatus = this.platform !== 'win32' ? 'Game FPS requires Windows.'
-      : !next.presentMonPath ? 'Choose PresentMon Console to enable game FPS.'
-        : !next.processName ? 'Enter the game executable name to enable FPS.' : 'Waiting for game frames.';
-    if (this.platform === 'win32' && next.presentMonPath && next.processName) this.startPresentMon();
+      : !this.presentMonPath ? 'Bundled FPS helper is missing. Reinstall NowLayer.'
+        : next.processName ? 'Waiting for game frames.' : 'Switch to your game to show FPS.';
+    if (this.platform === 'win32' && this.presentMonPath) this.startPresentMon();
     this.timer = setInterval(() => this.tick(), 1000);
     this.tick();
   }
   startPresentMon() {
-    this.presentSession = { executable: this.settings.presentMonPath, name: `NowLayer-${process.pid}-${this.generation}` };
-    const child = this.spawnProcess(this.settings.presentMonPath, [
-      '--process_name', this.settings.processName, '--output_stdout', '--no_console_stats', '--v1_metrics',
+    this.presentSession = { executable: this.presentMonPath, name: `NowLayer-${process.pid}-${this.generation}` };
+    const child = this.spawnProcess(this.presentMonPath, [
+      ...(this.settings.processName ? ['--process_name', this.settings.processName] : ['--exclude', 'NowLayer.exe', '--exclude', 'electron.exe']), '--output_stdout', '--no_console_stats', '--v1_metrics',
       '--session_name', this.presentSession.name,
     ], { windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
     this.presentChild = child;
@@ -138,13 +144,13 @@ class PerformanceMonitor extends EventEmitter {
     lines.on('line', line => { if (this.presentChild === child) this.frames.add(line); });
     let detail = '';
     child.stderr.on('data', buffer => { detail = (detail + buffer.toString()).slice(-512); });
-    child.on('error', error => { if (this.presentChild === child) this.fpsStatus = `PresentMon could not start: ${error.message}`; });
+    child.on('error', error => { if (this.presentChild === child) this.fpsStatus = `FPS capture could not start: ${error.message}`; });
     child.on('close', code => {
       lines.close();
       if (this.presentChild !== child) return;
       this.presentChild = null;
       this.frames.chains.clear();
-      this.fpsStatus = `PresentMon stopped (${code ?? 'launch error'}). Check console version and ETW permissions; toggle monitoring to retry.${detail ? ` ${detail.trim()}` : ''}`;
+      this.fpsStatus = `FPS capture stopped (${code ?? 'launch error'}). Check Windows Performance Log Users permissions; toggle monitoring to retry.${detail ? ` ${detail.trim()}` : ''}`;
     });
   }
   startSensors(now) {
@@ -156,7 +162,11 @@ class PerformanceMonitor extends EventEmitter {
     const lines = readline.createInterface({ input: child.stdout });
     lines.on('line', line => {
       if (this.sensorChild !== child) return;
-      try { this.sensors = parseSensors(JSON.parse(line)); this.sensorAt = Date.now(); } catch { /* Ignore non-JSON diagnostics. */ }
+      try {
+        const data = JSON.parse(line);
+        this.sensors = parseSensors(data); this.sensorAt = Date.now();
+        if (!this.settings.processName) this.updateForeground(data);
+      } catch { /* Ignore non-JSON diagnostics. */ }
     });
     child.stderr.on('data', () => {});
     child.on('error', () => {});
@@ -164,6 +174,13 @@ class PerformanceMonitor extends EventEmitter {
       lines.close();
       if (this.sensorChild === child) { this.sensorChild = null; this.sensorAt = 0; }
     });
+  }
+  updateForeground(data) {
+    const name = String(data.foregroundProcessName || '');
+    if (/^(NowLayer|electron)\.exe$/i.test(name)) return;
+    const pid = Number(data.foregroundProcessId);
+    const valid = Number.isSafeInteger(pid) && pid > 0 && name && !/^(explorer|dwm|ShellExperienceHost|StartMenuExperienceHost)\.exe$/i.test(name);
+    this.frames.setTarget(valid ? name : '', valid ? pid : null);
   }
   pollNvidia(now) {
     this.nextNvidiaAttempt = now + 2000;
@@ -193,12 +210,13 @@ class PerformanceMonitor extends EventEmitter {
     // Prefer NVML for NVIDIA cards; preserve LHM's AMD/Intel cards and stable IDs.
     const gpus = [...nvidia, ...sensors.gpus.filter(gpu => !nvidia.length || !/nvidia/i.test(gpu.id) || gpu.id === this.settings.gpuId)];
     const gpu = (this.settings.gpuId ? gpus.find(item => item.id === this.settings.gpuId) : gpus[0]) || null;
+    if (!this.settings.processName && now - this.sensorAt >= 6000) this.frames.setTarget('');
     const frames = this.frames.sample();
     const total = this.system.totalmem();
     this.lastState = {
       cpuUsage: cpuUsage(this.previousCpu, cpu), cpuTemperature: sensors.cpuTemperature,
       ramUsedGb: (total - this.system.freemem()) / 1024 ** 3, ramTotalGb: total / 1024 ** 3,
-      gpus, gpu, ...frames, fpsStatus: frames.fps !== null ? this.settings.processName : this.fpsStatus, sampledAt: now,
+      gpus, gpu, ...frames, fpsStatus: frames.fps !== null ? this.frames.processName : this.fpsStatus, sampledAt: now,
     };
     this.previousCpu = cpu;
     this.emit('state', this.lastState);
