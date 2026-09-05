@@ -11,7 +11,7 @@ jobs:
   test:
     name: Windows checks
     runs-on: windows-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
@@ -25,5 +25,5 @@ jobs:
       - name: Install locked dependencies
         run: npm ci
 
-      - name: Run checks and tests
-        run: npm run build
+      - name: Run checks, tests, and installer packaging
+        run: npm run dist

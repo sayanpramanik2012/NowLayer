@@ -24,8 +24,8 @@ try {
   if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
   $packagedHelper = Join-Path $projectRoot 'build\win-unpacked\resources\presentmon\PresentMon.exe'
   $packagedLicense = Join-Path $projectRoot 'build\win-unpacked\resources\presentmon\LICENSE.txt'
-  $expectedHash = node -p "require('./scripts/prepare-presentmon').SHA256"
-  if ((Get-FileHash -LiteralPath $packagedHelper -Algorithm SHA256).Hash.ToLower() -ne $expectedHash) {
+  & node -e "const fs=require('node:fs'); const {SHA256,digest}=require('./scripts/prepare-presentmon'); if(digest(fs.readFileSync(process.argv[1]))!==SHA256) process.exit(1);" $packagedHelper
+  if ($LASTEXITCODE -ne 0) {
     throw 'Packaged FPS helper failed integrity verification.'
   }
   if (-not (Test-Path -LiteralPath $packagedLicense)) { throw 'Bundled FPS license is missing.' }
