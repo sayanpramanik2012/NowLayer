@@ -1,4 +1,4 @@
-# One-time cleanup requested with the 1.1.0 update (PR #9).
+# One-time cleanup requested with the 1.1.0 packaging fix (PR #10).
 # Normal pushes do not trigger this workflow unless this file itself changes.
 name: Clean up merged branches
 on:
@@ -42,7 +42,7 @@ jobs:
                       return None
                   raise
 
-          candidates = [('feat/slim-performance-layouts', 9, None)]
+          candidates = [('fix/installer-integrity-check', 10, None)]
           for branch, number, expected in candidates:
               pull = api(f'/pulls/{number}')
               if not pull or not pull['merged'] or pull['base']['ref'] != 'main':
