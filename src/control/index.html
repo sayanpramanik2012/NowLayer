@@ -42,12 +42,12 @@
 
           <div class="home-heading"><h2>Your control panel</h2><p id="homeSummary">Choose what stays with you while you play.</p></div>
           <div class="home-grid">
-            <article class="home-module"><label><strong>Media player</strong><input type="checkbox" data-home-toggle="media" aria-label="Enable Media player"></label><p>Track, timeline, and playback controls. PiP shares this overlay.</p><button class="secondary-button" type="button" data-home-view="settings" aria-label="Customize Media player">Customize <span aria-hidden="true">→</span></button></article>
-            <article class="home-module"><label><strong>Performance</strong><input type="checkbox" data-home-toggle="performance" aria-label="Enable Performance"></label><p>FPS, CPU, GPU, and memory in a slim strip.</p><button class="secondary-button" type="button" data-home-view="performance" aria-label="Customize Performance">Customize <span aria-hidden="true">→</span></button></article>
-            <article class="home-module"><label><strong>Video PiP</strong><input type="checkbox" data-home-toggle="video" aria-label="Enable Video PiP"></label><p>Choose a video window here; adjust its size and controls inside.</p><button class="secondary-button" type="button" data-home-view="video" aria-label="Customize Video PiP">Customize <span aria-hidden="true">→</span></button></article>
-            <article class="home-module"><label><strong>Clock</strong><input type="checkbox" data-home-toggle="clock" aria-label="Enable Clock"></label><p>A glance at the time, with digital and analog styles.</p><button class="secondary-button" type="button" data-home-view="timers" aria-label="Customize Clock">Customize <span aria-hidden="true">→</span></button></article>
-            <article class="home-module"><label><strong>Countdown</strong><input type="checkbox" data-home-toggle="timer" aria-label="Enable Countdown"></label><p id="homeTimerDetail">Ready when you are · set a countdown in customization</p><button class="secondary-button" type="button" data-home-view="timers" aria-label="Customize Countdown">Customize <span aria-hidden="true">→</span></button></article>
-            <article class="home-module"><label><strong>Alarm</strong><input type="checkbox" data-home-toggle="alarm" aria-label="Enable Alarm"></label><p id="homeAlarmDetail">Daily at 07:00 · customize time and sound</p><button class="secondary-button" type="button" data-home-view="timers" aria-label="Customize Alarm">Customize <span aria-hidden="true">→</span></button></article>
+            <article class="home-module"><label><strong>Media player</strong><input type="checkbox" role="switch" data-home-toggle="media" aria-label="Enable Media player"></label><p>Track, timeline, and playback controls. PiP shares this overlay.</p><button class="secondary-button" type="button" data-home-view="settings" aria-label="Customize Media player">Customize <span aria-hidden="true">→</span></button></article>
+            <article class="home-module"><label><strong>Performance</strong><input type="checkbox" role="switch" data-home-toggle="performance" aria-label="Enable Performance"></label><p>FPS, CPU, GPU, and memory in a slim strip.</p><button class="secondary-button" type="button" data-home-view="performance" aria-label="Customize Performance">Customize <span aria-hidden="true">→</span></button></article>
+            <article class="home-module"><label><strong>Video PiP</strong><input type="checkbox" role="switch" data-home-toggle="video" aria-label="Enable Video PiP"></label><p>Choose a video window here; adjust its size and controls inside.</p><button class="secondary-button" type="button" data-home-view="video" aria-label="Customize Video PiP">Customize <span aria-hidden="true">→</span></button></article>
+            <article class="home-module"><label><strong>Clock</strong><input type="checkbox" role="switch" data-home-toggle="clock" aria-label="Enable Clock"></label><p>A glance at the time, with digital and analog styles.</p><button class="secondary-button" type="button" data-home-view="timers" aria-label="Customize Clock">Customize <span aria-hidden="true">→</span></button></article>
+            <article class="home-module"><label><strong>Countdown</strong><input type="checkbox" role="switch" data-home-toggle="timer" aria-label="Enable Countdown"></label><p id="homeTimerDetail">Ready when you are · set a countdown in customization</p><button class="secondary-button" type="button" data-home-view="timers" aria-label="Customize Countdown">Customize <span aria-hidden="true">→</span></button></article>
+            <article class="home-module"><label><strong>Alarm</strong><input type="checkbox" role="switch" data-home-toggle="alarm" aria-label="Enable Alarm"></label><p id="homeAlarmDetail">Daily at 07:00 · customize time and sound</p><button class="secondary-button" type="button" data-home-view="timers" aria-label="Customize Alarm">Customize <span aria-hidden="true">→</span></button></article>
           </div>
           <p id="homeMessage" role="status"></p>
           <dialog id="homeVideoDialog"><h2>Choose a video window</h2><p id="homeVideoStatus" role="status"></p><select id="homeVideoSource" aria-label="Video source window"></select><div class="performance-actions"><button id="homeVideoCancel" class="secondary-button" type="button">Cancel</button><button id="homeVideoApply" class="primary-button" type="button">Start PiP</button></div></dialog>
@@ -95,7 +95,7 @@
           </article>
           <article class="panel pip-size-panel">
             <div><h2>PiP size</h2><p>Choose a preset, or unlock the overlay and drag any window edge. NowLayer keeps the video at 16:9 and remembers your size.</p></div>
-            <select id="pipSizeSelect" aria-label="Video PiP size"><option value="320">Small · 320 × 180</option><option value="480">Medium · 480 × 270</option><option value="640">Large · 640 × 360</option><option value="custom">Custom size</option></select>
+            <div class="pip-selects"><label>Size<select id="pipSizeSelect" aria-label="Video PiP size"><option value="320">Small · 320 × 180</option><option value="480">Medium · 480 × 270</option><option value="640">Large · 640 × 360</option><option value="custom">Custom size</option></select></label><label>Frame rate<select id="videoFrameRateSelect" aria-label="Video PiP frame rate"><option value="15">Battery saver · 15 FPS</option><option value="24">Balanced · 24 FPS</option><option value="30">Smooth · 30 FPS</option></select></label></div>
           </article>
           <article class="panel source-panel">
             <div class="panel-heading"><div><h2>Choose a window</h2><p>For a clean result, open the YouTube video in its own browser window, then select that window.</p></div></div>
@@ -108,27 +108,43 @@
 
         <section class="view" data-view-panel="performance">
           <header class="page-header"><div><p class="eyebrow">PERFORMANCE</p><h1>Your system, at a glance.</h1></div></header>
-          <article class="panel settings-list">
-            <label class="setting-row"><div><strong>Performance overlay</strong><span>Separate widget. Uses your lock and show/hide shortcuts.</span></div><input id="performanceEnabled" type="checkbox"></label>
+          <div class="performance-page-grid">
+          <article class="panel settings-list performance-appearance">
+            <label class="setting-row"><div><strong>Performance overlay</strong><span>Separate widget. Uses your lock and show/hide shortcuts.</span></div><input id="performanceEnabled" type="checkbox" role="switch"></label>
             <label class="setting-row"><div><strong>Layout</strong><span>A slim strip for an occasional glance, or more detail when you need it.</span></div><select id="performanceLayout"><option value="strip">Slim strip · default</option><option value="compact">Compact row</option><option value="detailed">Detailed card</option></select></label>
             <label class="setting-row"><div><strong>Theme</strong><span>Choose a dark surface or text directly over your game.</span></div><select id="performanceTheme"><option value="graphite">Graphite</option><option value="midnight">Midnight</option><option value="minimal">Minimal HUD · text only</option></select></label>
             <label class="setting-row"><div><strong>Position</strong><span>Unlock interaction to drag it to another monitor.</span></div><select id="performanceAnchor"><option value="top-left">Top left</option><option value="top-right">Top right</option><option value="bottom-left">Bottom left</option><option value="bottom-right">Bottom right</option><option value="manual">Custom position</option></select></label>
             <label class="setting-row slider-row"><div><strong>Performance opacity</strong><span>Adjust only the performance widget.</span></div><div class="slider-wrap"><input id="performanceOpacity" type="range" min="30" max="100" step="1"><output id="performanceOpacityValue">94%</output></div></label>
             <label class="setting-row"><div><strong>GPU</strong><span>Select the adapter you want to monitor.</span></div><select id="performanceGpu"><option value="">Automatic</option></select></label>
+            <label class="setting-row"><div><strong>Update rate</strong><span>Efficient is recommended while gaming.</span></div><select id="performanceUpdateRate"><option value="efficient">Efficient · 2 seconds</option><option value="responsive">Responsive · 1 second</option></select></label>
           </article>
-          <article class="panel performance-panel">
+          <article class="panel performance-panel performance-preview-panel">
             <h2>Overlay preview</h2>
             <p id="performancePreviewLabel">Example preview · actual size</p>
             <div class="performance-preview-scroll"><div id="performancePreview" aria-label="Performance layout preview"></div></div>
-            <p>Missing values use a dash. Setup messages stay here in Control Center.</p>
+            <p>Unavailable values use a small “n/a”. Diagnostics never appear over your game.</p>
+          </article>
+          </div>
+          <article class="panel performance-panel">
+            <div class="panel-heading"><div><h2>Choose your readings</h2><p>Turn off anything you do not need. The slim strip becomes shorter automatically.</p></div></div>
+            <div class="metric-picker">
+              <label><input id="metricFps" type="checkbox"><span>FPS</span></label>
+              <label><input id="metricFrameTime" type="checkbox"><span>Frame time</span></label>
+              <label><input id="metricCpu" type="checkbox"><span>CPU usage</span></label>
+              <label><input id="metricCpuTemp" type="checkbox"><span>CPU temperature</span></label>
+              <label><input id="metricGpu" type="checkbox"><span>GPU usage</span></label>
+              <label><input id="metricGpuTemp" type="checkbox"><span>GPU temperature</span></label>
+              <label><input id="metricRam" type="checkbox"><span>RAM</span></label>
+              <label><input id="metricVram" type="checkbox"><span>VRAM</span></label>
+            </div>
           </article>
           <article class="panel performance-panel">
             <h2>Live readings</h2>
             <div class="performance-readings">
-              <div><small>GAME FPS</small><strong id="performanceFps">—</strong><span id="performanceFrameTime">No frames</span></div>
-              <div><small>CPU</small><strong id="performanceCpu">—</strong><span id="performanceCpuTemp">Temperature unavailable</span></div>
-              <div><small>GPU</small><strong id="performanceGpuUsage">—</strong><span id="performanceGpuTemp">Temperature unavailable</span></div>
-              <div><small>RAM</small><strong id="performanceRam">—</strong><span id="performanceVram">VRAM unavailable</span></div>
+              <div><small>GAME FPS</small><strong id="performanceFps">n/a</strong><span id="performanceFrameTime">No frames</span></div>
+              <div><small>CPU</small><strong id="performanceCpu">n/a</strong><span id="performanceCpuTemp">Temperature unavailable</span></div>
+              <div><small>GPU</small><strong id="performanceGpuUsage">n/a</strong><span id="performanceGpuTemp">Temperature unavailable</span></div>
+              <div><small>RAM</small><strong id="performanceRam">n/a</strong><span id="performanceVram">VRAM unavailable</span></div>
             </div>
             <p id="performanceStatus" role="status">Enable performance monitoring to start.</p>
             <p id="performanceGpuSource"></p>
@@ -138,13 +154,13 @@
             <p>FPS capture is bundled with NowLayer. Turn on Performance from Home, then switch to your game. No extra download or executable path is needed. FPS measures application presents; displayed FPS and generated frames can differ.</p>
             <label class="setting-row"><div><strong>Optional game override</strong><span>Leave blank to follow the foreground app. Use game.exe to keep tracking one game.</span></div><input id="performanceProcess" type="text" placeholder="Automatic foreground app" maxlength="128"></label>
             <button id="savePerformanceProcess" class="secondary-button" type="button">Save capture target</button>
-            <p>Windows needs permission to collect ETW events. If access is denied, use an account in Windows' Performance Log Users group (sign out and back in afterward), or run NowLayer as administrator for capture. Toggle monitoring off and on to retry.</p>
+            <p>If Windows blocks FPS access, add your account to the Performance Log Users group, sign out and back in, then turn Performance off and on. CPU, GPU, and memory readings continue to work.</p>
             <p id="performanceMessage" role="status"></p>
           </article>
           <article class="panel performance-panel">
             <h2>Temperatures & GPU support</h2>
-            <p>NVIDIA readings use the driver’s nvidia-smi utility. For CPU temperature and AMD/Intel GPU sensors, run Libre Hardware Monitor with its WMI provider enabled and the required sensor permissions. Keep it running while playing. Missing or stale sensors show a dash on the overlay and “unavailable” here.</p>
-            <p>CPU and RAM work without extra tools. Monitoring pauses when the overlay is hidden. Use borderless-windowed games as with the media overlay.</p>
+            <p>NVIDIA readings use the driver’s nvidia-smi utility. CPU temperature and AMD/Intel GPU sensors can use Libre Hardware Monitor’s WMI provider. Hidden readings are not queried when possible.</p>
+            <p>CPU and RAM work without extra tools. Monitoring pauses when overlays are hidden, and FPS capture targets only the selected game process.</p>
           </article>
         </section>
 
@@ -219,7 +235,7 @@
             <label class="setting-row slider-row"><div><strong>Media overlay opacity</strong><span>Adjust only the music and now-playing card.</span></div><div class="slider-wrap"><input id="mediaOpacitySlider" type="range" min="30" max="100" step="1"><output id="mediaOpacityValue">94%</output></div></label>
             <label class="setting-row slider-row"><div><strong>Video PiP opacity</strong><span>Adjust only the captured video window.</span></div><div class="slider-wrap"><input id="videoOpacitySlider" type="range" min="30" max="100" step="1"><output id="videoOpacityValue">100%</output></div></label>
           </article>
-          <article class="panel hotkey-panel"><h2>Your hotkeys</h2><p>Click a shortcut, then press the keys you want together. Press Escape to cancel.</p><button id="visibilityHotkeyInput" class="hotkey-recorder" type="button"><span>Show / hide media & performance</span><kbd>Ctrl + Shift + M</kbd></button><button id="lockHotkeyInput" class="hotkey-recorder" type="button"><span>Lock / unlock interaction</span><kbd>Ctrl + Shift + L</kbd></button><button id="dismissHotkeyInput" class="hotkey-recorder" type="button"><span>Dismiss timer or alarm</span><kbd>Ctrl + Shift + A</kbd></button><p id="hotkeyMessage" class="copy-confirmation" role="status"></p></article>
+          <article class="panel hotkey-panel"><h2>Your hotkeys</h2><p>Click a shortcut, then press the keys you want together. Press Escape to cancel.</p><button id="visibilityHotkeyInput" class="hotkey-recorder" type="button"><span>Show / hide all overlays</span><kbd>Ctrl + Shift + M</kbd></button><button id="lockHotkeyInput" class="hotkey-recorder" type="button"><span>Lock / unlock interaction</span><kbd>Ctrl + Shift + L</kbd></button><button id="dismissHotkeyInput" class="hotkey-recorder" type="button"><span>Dismiss timer or alarm</span><kbd>Ctrl + Shift + A</kbd></button><p id="hotkeyMessage" class="copy-confirmation" role="status"></p></article>
           <button id="resetButton" class="danger-button" type="button">Reset NowLayer settings</button>
         </section>
 
@@ -241,7 +257,10 @@
             <div><small>RUNTIME</small><strong id="runtimeDiagnostic">Electron</strong></div>
             <div><small>WINDOW MODE</small><strong id="windowDiagnostic">Always on top</strong></div>
             <div><small>MEDIA SOURCE</small><strong id="sourceDiagnostic">None</strong></div>
+            <div><small>APP CPU</small><strong id="resourceCpuDiagnostic">Open this page to sample</strong></div>
+            <div><small>APP MEMORY</small><strong id="resourceMemoryDiagnostic">Open this page to sample</strong></div>
           </article>
+          <article class="panel efficiency-note"><h2>Designed to stay light</h2><p>Efficient performance updates run every two seconds. FPS captures only the foreground game process, hidden readings skip their providers, hidden overlays stop collection, and closing Control Center releases its renderer memory. The media helper also sleeps when media and PiP are off. Video PiP is the heaviest feature; choose 15 or 24 FPS if your game needs more GPU headroom.</p></article>
           <article id="errorPanel" class="panel error-panel" hidden><h2>Media bridge message</h2><code id="mediaError"></code></article>
           <p id="copyConfirmation" class="copy-confirmation" role="status"></p>
         </section>

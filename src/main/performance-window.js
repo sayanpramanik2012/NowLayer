@@ -13,8 +13,13 @@ class PerformanceWindow extends EventEmitter {
   apply(settings) {
     this.settings = settings;
     const config = settings.performance;
-    if (!config.enabled || !settings.visible) { this.window?.hide(); return; }
-    const size = dimensions(config.layout);
+    if (!config.enabled || !settings.visible) {
+      const previous = this.window;
+      this.window = null;
+      if (previous && !previous.isDestroyed()) previous.destroy();
+      return;
+    }
+    const size = dimensions(config.layout, config.metrics);
     if (!this.window) {
       const window = new this.BrowserWindow({
         ...size, title: 'NowLayer Performance', frame: false, transparent: true,
@@ -50,8 +55,9 @@ class PerformanceWindow extends EventEmitter {
     window.setAlwaysOnTop(true, 'screen-saver');
     window.setIgnoreMouseEvents(settings.locked, { forward: true });
     window.setFocusable(!settings.locked);
-    window.showInactive();
+    if (this.suppressed) window.hide(); else window.showInactive();
   }
+  setSuppressed(value) { this.suppressed = value === true; if (this.settings) this.apply(this.settings); }
   broadcast(channel, value) {
     const window = this.window;
     if (window && !window.isDestroyed() && !window.webContents.isDestroyed()) window.webContents.send(channel, value);

@@ -37,6 +37,7 @@ const elements = {
   pipControlsToggle: document.getElementById('pipControlsToggle'),
   pipControlPositionSelect: document.getElementById('pipControlPositionSelect'),
   pipSizeSelect: document.getElementById('pipSizeSelect'),
+  videoFrameRateSelect: document.getElementById('videoFrameRateSelect'),
   mediaOpacitySlider: document.getElementById('mediaOpacitySlider'),
   mediaOpacityValue: document.getElementById('mediaOpacityValue'),
   videoOpacitySlider: document.getElementById('videoOpacitySlider'),
@@ -48,6 +49,8 @@ const elements = {
   runtimeDiagnostic: document.getElementById('runtimeDiagnostic'),
   windowDiagnostic: document.getElementById('windowDiagnostic'),
   sourceDiagnostic: document.getElementById('sourceDiagnostic'),
+  resourceCpuDiagnostic: document.getElementById('resourceCpuDiagnostic'),
+  resourceMemoryDiagnostic: document.getElementById('resourceMemoryDiagnostic'),
   errorPanel: document.getElementById('errorPanel'),
   mediaError: document.getElementById('mediaError'),
   clockToggle: document.getElementById('clockToggle'),
@@ -119,12 +122,27 @@ function setIcon(element, name) {
 
 function selectView(viewName) {
   for (const button of elements.navButtons) {
-    button.classList.toggle('is-active', button.dataset.view === viewName);
+    const selected = button.dataset.view === viewName;
+    button.classList.toggle('is-active', selected);
+    if (selected) button.setAttribute('aria-current', 'page');
+    else button.removeAttribute('aria-current');
   }
   for (const panel of elements.panels) {
     panel.classList.toggle('is-active', panel.dataset.viewPanel === viewName);
   }
   if (viewName === 'video' && !sourcesLoaded) loadCaptureSources();
+  if (viewName === 'help') sampleResourceUsage();
+}
+
+async function sampleResourceUsage() {
+  try {
+    const usage = await window.nowLayer.getResourceUsage();
+    elements.resourceCpuDiagnostic.textContent = `${usage.cpuPercent.toFixed(1)}% across ${usage.processes} processes`;
+    elements.resourceMemoryDiagnostic.textContent = `${usage.memoryMb.toFixed(0)} MB working set`;
+  } catch {
+    elements.resourceCpuDiagnostic.textContent = 'Unavailable';
+    elements.resourceMemoryDiagnostic.textContent = 'Unavailable';
+  }
 }
 
 function friendlySource(source) {
@@ -258,6 +276,7 @@ function render(nextState) {
   renderOpacity(elements.videoOpacitySlider, elements.videoOpacityValue, settings.videoOpacity ?? 1);
   const pipWidth = Number(settings.pipBounds?.width) || 480;
   elements.pipSizeSelect.value = [320, 480, 640].includes(pipWidth) ? String(pipWidth) : 'custom';
+  elements.videoFrameRateSelect.value = String(settings.videoFrameRate || 24);
   elements.clockToggle.checked = utilities.showClock === true;
   elements.clockStyleSelect.value = utilities.clockStyle || 'digital';
   elements.clockFormatSelect.value = utilities.use24Hour ? '24' : '12';
@@ -382,6 +401,9 @@ elements.pipSizeSelect.addEventListener('change', () => {
   if (elements.pipSizeSelect.value === 'custom') return;
   const width = Number(elements.pipSizeSelect.value);
   setSetting('pipBounds', { width, height: Math.round(width * 9 / 16) });
+});
+elements.videoFrameRateSelect.addEventListener('change', () => {
+  setSetting('videoFrameRate', Number(elements.videoFrameRateSelect.value));
 });
 bindOpacity(elements.mediaOpacitySlider, elements.mediaOpacityValue, 'mediaOpacity', (value) => value);
 bindOpacity(elements.videoOpacitySlider, elements.videoOpacityValue, 'videoOpacity', (value) => value);
@@ -555,3 +577,6 @@ window.nowLayer.getState().then(render).catch((error) => {
 setInterval(() => {
   if (state?.utilities?.timer) elements.timerReadout.textContent = formatDuration(timerRemaining(state.utilities.timer));
 }, 250);
+setInterval(() => {
+  if (document.querySelector('[data-view-panel="help"]')?.classList.contains('is-active')) sampleResourceUsage();
+}, 3000);

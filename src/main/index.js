@@ -126,6 +126,7 @@ function setVideoState(patch) {
     revision: videoState.revision + 1,
   });
   overlayManager.setVideoMode(videoState.active);
+  syncMediaMonitor();
   broadcastState();
   return videoState;
 }
@@ -193,13 +194,20 @@ function createControlWindow({ show = true } = {}) {
   window.once('ready-to-show', () => {
     if (show) window.show();
   });
-  window.on('close', (event) => {
-    if (shuttingDown) return;
-    event.preventDefault();
-    window.hide();
+  window.on('focus', () => {
+    // Keep game overlays out of the Control Center itself. Monitoring stays live for its preview.
+    overlayManager.setSuppressed(true);
+    performanceWindow.setSuppressed(true);
   });
+  window.on('blur', () => {
+    overlayManager.setSuppressed(false);
+    performanceWindow.setSuppressed(false);
+  });
+  // Closing Control Center releases its renderer memory; the tray recreates it on demand.
   window.on('closed', () => {
     if (controlWindow === window) controlWindow = null;
+    overlayManager.setSuppressed(false);
+    performanceWindow.setSuppressed(false);
   });
   return window;
 }
@@ -257,6 +265,7 @@ function scheduleSettingsSave(settings) {
 overlayManager.on('settings-changed', (settings) => {
   scheduleSettingsSave(settings);
   syncPerformance();
+  syncMediaMonitor();
   updateTrayMenu();
   broadcastState();
 });
@@ -274,6 +283,15 @@ function syncPerformance() {
   performanceWindow.apply(settings);
   performanceMonitor.configure({ ...settings.performance, enabled: settings.performance.enabled && settings.visible && !smokeTestMode });
 }
+function syncMediaMonitor() {
+  const settings = overlayManager.settings;
+  const shouldRun = !smokeTestMode && settings.visible && (settings.mediaEnabled || videoState.active);
+  if (shouldRun) mediaMonitor.start();
+  else {
+    mediaMonitor.stop();
+    mediaState = { ...mediaMonitor.lastState, available: false, status: 'Paused', sampledAt: Date.now() };
+  }
+}
 performanceWindow.on('position', position => {
   overlayManager.updateSettings({ performance: { ...overlayManager.settings.performance, ...position } });
 });
@@ -285,6 +303,12 @@ performanceMonitor.on('state', state => {
 });
 
 ipcMain.handle('nowlayer:get-state', () => currentState());
+ipcMain.handle('nowlayer:get-resource-usage', () => {
+  const metrics = app.getAppMetrics();
+  const cpuPercent = metrics.reduce((sum, item) => sum + (Number(item.cpu?.percentCPUUsage) || 0), 0);
+  const memoryMb = metrics.reduce((sum, item) => sum + (Number(item.memory?.workingSetSize) || 0), 0) / 1024;
+  return { cpuPercent: Math.max(0, cpuPercent), memoryMb: Math.max(0, memoryMb), processes: metrics.length };
+});
 
 ipcMain.handle('nowlayer:set-setting', (_event, key, value) => {
   const allowed = new Set([
@@ -298,6 +322,7 @@ ipcMain.handle('nowlayer:set-setting', (_event, key, value) => {
     'opacity',
     'mediaOpacity',
     'videoOpacity',
+    'videoFrameRate',
     'pipBounds',
     'anchor',
     'utilities',
@@ -467,11 +492,12 @@ if (!hasSingleInstanceLock) {
     // Persist the clean startup state so a timer cannot be resurrected next time.
     overlayManager.updateSettings({ utilities: timekeeper.getState() });
     timekeeper.start();
-    overlayManager.createDesktopWindow();
+    // applySettings creates only the overlay windows that are actually enabled.
+    overlayManager.applySettings();
     if (!smokeTestMode) createTray();
     createControlWindow({ show: !smokeTestMode });
     registerDesktopHotkeys(overlayManager.settings.hotkeys);
-    mediaMonitor.start();
+    syncMediaMonitor();
 
     if (smokeTestMode) {
       setTimeout(() => {

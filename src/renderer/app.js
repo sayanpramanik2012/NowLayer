@@ -184,7 +184,7 @@ function stopCaptureStream() {
   for (const track of previous?.getTracks?.() ?? []) track.stop();
 }
 
-async function synchronizeVideo(videoState) {
+async function synchronizeVideo(videoState, frameRate = 24) {
   const shouldCapture = videoState?.active === true;
   if (!shouldCapture) {
     captureRequest += 1;
@@ -194,10 +194,11 @@ async function synchronizeVideo(videoState) {
   }
   // One attempt per selection. A failed capture waits for an explicit reselect
   // instead of retrying on every media metadata update.
-  if (captureRevision === videoState.revision) return;
+  const revisionKey = `${videoState.revision}:${frameRate}`;
+  if (captureRevision === revisionKey) return;
 
   const requestId = ++captureRequest;
-  captureRevision = videoState.revision;
+  captureRevision = revisionKey;
   stopCaptureStream();
   elements.videoMessage.textContent = `Connecting to ${videoState.sourceName || 'the selected window'}...`;
   elements.videoStage.classList.remove('has-video');
@@ -205,7 +206,7 @@ async function synchronizeVideo(videoState) {
   try {
     const stream = await navigator.mediaDevices.getDisplayMedia({
       audio: false,
-      video: { frameRate: { ideal: 30, max: 30 } },
+      video: { frameRate: { ideal: frameRate, max: frameRate } },
     });
     if (requestId !== captureRequest) {
       for (const track of stream.getTracks()) track.stop();
@@ -295,7 +296,7 @@ function render(nextState) {
     elements.artwork.classList.remove('has-image');
   }
 
-  synchronizeVideo(video);
+  synchronizeVideo(settings.visible === false ? { active: false } : video, settings.videoFrameRate || 24);
 }
 
 async function setSetting(key, value) {

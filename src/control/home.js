@@ -19,7 +19,7 @@
     };
     for (const input of switches) input.checked = flags[input.dataset.homeToggle];
     const count = Object.values(flags).filter(Boolean).length;
-    summary.textContent = `${count} features enabled${settings.visible === false ? ' · overlays hidden' : ''}. Choose what stays with you while you play.`;
+    summary.textContent = `${count} features enabled${settings.visible === false ? ' · overlays hidden' : ''}. Overlays return when you switch back to your game.`;
     document.getElementById('homeAlarmDetail').textContent = `Daily at ${utilities.alarm?.time || '07:00'} · customize time and sound`;
     document.getElementById('homeTimerDetail').textContent = utilities.timer?.active ? 'Counting down · hiding the widget keeps the timer running' : 'Ready when you are · set a countdown in customization';
   }

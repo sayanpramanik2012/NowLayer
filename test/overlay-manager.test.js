@@ -30,6 +30,7 @@ function attachWindow(manager) {
     moveTop: 0,
     resizable: [],
     aspectRatios: [],
+    destroy: 0,
   };
   manager.desktopWindow = {
     webContents: { isDestroyed: () => false, send: () => {} },
@@ -48,6 +49,7 @@ function attachWindow(manager) {
     showInactive: () => { calls.showInactive += 1; },
     hide: () => { calls.hide += 1; },
     moveTop: () => { calls.moveTop += 1; },
+    destroy: () => { calls.destroy += 1; },
   };
   return calls;
 }
@@ -138,21 +140,22 @@ test('media can be disabled independently and video can still show', () => {
   const manager = createManager();
   const calls = attachWindow(manager);
   manager.updateSettings({ mediaEnabled: false, performance: { enabled: true } });
-  assert.equal(calls.hide, 1);
+  assert.equal(calls.destroy, 1);
   manager.showDesktopWindow();
   assert.equal(calls.showInactive, 0);
   assert.equal(manager.settings.performance.enabled, true);
+  const videoCalls = attachWindow(manager);
   manager.setVideoMode(true);
-  assert.equal(calls.showInactive, 1);
+  assert.equal(videoCalls.showInactive, 1);
   manager.setVideoMode(false);
-  assert.equal(calls.hide, 2);
+  assert.equal(manager.desktopWindow, null);
 });
 
 test('hide all includes the independent clock and timer window', () => {
   const manager = createManager();
   attachWindow(manager);
   let hidden = 0;
-  manager.utilityWindow = { isDestroyed: () => false, hide: () => hidden++, webContents: { isDestroyed: () => false, send() {} } };
+  manager.utilityWindow = { isDestroyed: () => false, hide: () => hidden++, destroy: () => hidden++, webContents: { isDestroyed: () => false, send() {} } };
   manager.updateSettings({ visible: false, utilities: { displayMode: 'separate', showClock: true } });
   assert.equal(hidden, 1);
 });

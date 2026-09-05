@@ -57,6 +57,7 @@ const DEFAULT_SETTINGS = Object.freeze({
   opacity: 0.94,
   mediaOpacity: 0.94,
   videoOpacity: 1,
+  videoFrameRate: 24,
   anchor: 'bottom-right',
   margin: 24,
   hotkeys: DEFAULT_HOTKEYS,
@@ -121,6 +122,7 @@ function sanitizeSettings(candidate = {}) {
     opacity: legacyOpacity,
     mediaOpacity: clamp(finiteOr(candidate.mediaOpacity, legacyOpacity), 0.3, 1),
     videoOpacity: clamp(finiteOr(candidate.videoOpacity, DEFAULT_SETTINGS.videoOpacity), 0.3, 1),
+    videoFrameRate: [15, 24, 30].includes(candidate.videoFrameRate) ? candidate.videoFrameRate : DEFAULT_SETTINGS.videoFrameRate,
     anchor: ALLOWED_ANCHORS.has(candidate.anchor)
       ? candidate.anchor
       : DEFAULT_SETTINGS.anchor,

@@ -105,6 +105,8 @@ class PerformanceMonitor extends EventEmitter {
     this.presentChild = null;
     this.nvidiaChild = null;
     this.generation = 0;
+    this.presentSerial = 0;
+    this.presentTarget = null;
     this.lastState = this.emptyState();
   }
   emptyState() {
@@ -113,7 +115,13 @@ class PerformanceMonitor extends EventEmitter {
   }
   configure(settings) {
     const next = normalizePerformance(settings);
-    const restart = !this.timer || next.processName !== this.settings.processName;
+    const collectionKey = value => JSON.stringify({
+      processName: value.processName, updateRate: value.updateRate, gpuId: value.gpuId,
+      fps: value.metrics.fps, frameTime: value.metrics.frameTime,
+      cpuTemp: value.metrics.cpuTemp, gpu: value.metrics.gpu,
+      gpuTemp: value.metrics.gpuTemp, vram: value.metrics.vram,
+    });
+    const restart = !this.timer || collectionKey(next) !== collectionKey(this.settings);
     this.settings = next;
     if (!next.enabled) { if (this.timer) this.stop(); return; }
     if (!restart) return;
@@ -125,18 +133,26 @@ class PerformanceMonitor extends EventEmitter {
     this.nvidiaAt = 0;
     this.nextSensorAttempt = 0;
     this.nextNvidiaAttempt = 0;
+    this.sampleInterval = next.updateRate === 'responsive' ? 1000 : 2000;
+    this.wantsFps = next.metrics.fps || next.metrics.frameTime;
+    this.wantsGpu = next.metrics.gpu || next.metrics.gpuTemp || next.metrics.vram;
+    this.needsHardwareSensors = next.metrics.cpuTemp || this.wantsGpu;
     this.frames = new FrameAccumulator(next.processName);
-    this.fpsStatus = this.platform !== 'win32' ? 'Game FPS requires Windows.'
-      : !this.presentMonPath ? 'Bundled FPS helper is missing. Reinstall NowLayer.'
+    this.fpsStatus = !this.wantsFps ? 'FPS and frame time are hidden.'
+      : this.platform !== 'win32' ? 'Game FPS requires Windows.'
+        : !this.presentMonPath ? 'Bundled FPS helper is missing. Reinstall NowLayer.'
         : next.processName ? 'Waiting for game frames.' : 'Switch to your game to show FPS.';
-    if (this.platform === 'win32' && this.presentMonPath) this.startPresentMon();
-    this.timer = setInterval(() => this.tick(), 1000);
+    this.presentTarget = next.processName ? { name: next.processName, pid: null } : null;
+    if (this.platform === 'win32' && this.presentMonPath && this.wantsFps && next.processName) this.startPresentMon();
+    this.timer = setInterval(() => this.tick(), this.sampleInterval);
     this.tick();
   }
   startPresentMon() {
-    this.presentSession = { executable: this.presentMonPath, name: `NowLayer-${process.pid}-${this.generation}` };
+    if (this.platform !== 'win32' || !this.presentTarget || this.presentChild) return;
+    this.presentSession = { executable: this.presentMonPath, name: `NowLayer-${process.pid}-${this.generation}-${++this.presentSerial}` };
     const child = this.spawnProcess(this.presentMonPath, [
-      ...(this.settings.processName ? ['--process_name', this.settings.processName] : ['--exclude', 'NowLayer.exe', '--exclude', 'electron.exe']), '--output_stdout', '--no_console_stats', '--v1_metrics',
+      ...(this.presentTarget.pid ? ['--process_id', String(this.presentTarget.pid)] : ['--process_name', this.presentTarget.name]),
+      '--output_stdout', '--no_console_stats', '--v1_metrics',
       '--session_name', this.presentSession.name,
     ], { windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
     this.presentChild = child;
@@ -150,12 +166,37 @@ class PerformanceMonitor extends EventEmitter {
       if (this.presentChild !== child) return;
       this.presentChild = null;
       this.frames.chains.clear();
-      this.fpsStatus = `FPS capture stopped (${code ?? 'launch error'}). Check Windows Performance Log Users permissions; toggle monitoring to retry.${detail ? ` ${detail.trim()}` : ''}`;
+      const denied = /access denied|administrative privileges|Performance Log Users/i.test(detail);
+      this.fpsStatus = denied
+        ? 'FPS unavailable — Windows capture permission is required. Other readings are still active.'
+        : `FPS capture stopped (${code ?? 'launch error'}). Turn Performance off and on to retry.`;
     });
+  }
+  stopPresentMon() {
+    const child = this.presentChild;
+    this.presentChild = null;
+    child?.kill();
+    if (!this.presentSession) return;
+    const { executable, name } = this.presentSession;
+    this.presentSession = null;
+    this.execute(executable, ['--session_name', name, '--terminate_existing_session'],
+      { windowsHide: true, timeout: 2000, maxBuffer: 16 * 1024 }, () => {});
+  }
+  setCaptureTarget(name = '', pid = null) {
+    const next = name ? { name, pid } : null;
+    if (this.presentTarget?.name === next?.name && this.presentTarget?.pid === next?.pid) return;
+    this.presentTarget = next;
+    this.frames.setTarget(name, pid);
+    this.stopPresentMon();
+    if (next && this.wantsFps && this.presentMonPath) {
+      this.fpsStatus = `Waiting for ${name} frames.`;
+      this.startPresentMon();
+    } else if (!next) this.fpsStatus = 'Switch to your game to show FPS.';
   }
   startSensors(now) {
     this.nextSensorAttempt = now + 15_000;
-    const child = this.spawnProcess('powershell.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', this.sensorScript],
+    const child = this.spawnProcess('powershell.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', this.sensorScript,
+      ...(this.needsHardwareSensors ? [] : ['-SkipHardware'])],
       { windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
     this.sensorChild = child;
     this.sensorStartedAt = now;
@@ -176,14 +217,15 @@ class PerformanceMonitor extends EventEmitter {
     });
   }
   updateForeground(data) {
+    if (!this.wantsFps || this.settings.processName) return;
     const name = String(data.foregroundProcessName || '');
     if (/^(NowLayer|electron)\.exe$/i.test(name)) return;
     const pid = Number(data.foregroundProcessId);
     const valid = Number.isSafeInteger(pid) && pid > 0 && name && !/^(explorer|dwm|ShellExperienceHost|StartMenuExperienceHost)\.exe$/i.test(name);
-    this.frames.setTarget(valid ? name : '', valid ? pid : null);
+    this.setCaptureTarget(valid ? name : '', valid ? pid : null);
   }
   pollNvidia(now) {
-    this.nextNvidiaAttempt = now + 2000;
+    this.nextNvidiaAttempt = now + (this.settings.updateRate === 'responsive' ? 2000 : 5000);
     const generation = this.generation;
     this.nvidiaChild = this.execute('nvidia-smi.exe', [
       '--query-gpu=uuid,name,utilization.gpu,temperature.gpu,memory.used,memory.total', '--format=csv,noheader,nounits',
@@ -192,6 +234,14 @@ class PerformanceMonitor extends EventEmitter {
       this.nvidiaChild = null;
       this.nvidia = error ? [] : parseNvidia(stdout);
       this.nvidiaAt = Date.now();
+      const selectedUsesNvidia = !this.settings.gpuId || this.settings.gpuId.startsWith('GPU-');
+      if (!error && this.nvidia.length && !this.settings.metrics.cpuTemp && selectedUsesNvidia && this.needsHardwareSensors) {
+        this.needsHardwareSensors = false;
+        const sensor = this.sensorChild;
+        this.sensorChild = null;
+        sensor?.kill();
+        this.nextSensorAttempt = 0;
+      }
       if (error) this.nextNvidiaAttempt = Date.now() + 30_000;
     });
   }
@@ -201,8 +251,9 @@ class PerformanceMonitor extends EventEmitter {
       if (this.sensorChild && now - Math.max(this.sensorAt, this.sensorStartedAt) > 10_000) {
         const child = this.sensorChild; this.sensorChild = null; child.kill();
       }
-      if (!this.sensorChild && now >= this.nextSensorAttempt) this.startSensors(now);
-      if (!this.nvidiaChild && now >= this.nextNvidiaAttempt) this.pollNvidia(now);
+      const needsSensorHelper = this.needsHardwareSensors || (this.wantsFps && !this.settings.processName);
+      if (needsSensorHelper && !this.sensorChild && now >= this.nextSensorAttempt) this.startSensors(now);
+      if (this.wantsGpu && !this.nvidiaChild && now >= this.nextNvidiaAttempt) this.pollNvidia(now);
     }
     const cpu = cpuTotals(this.system.cpus());
     const sensors = now - this.sensorAt < 6000 ? this.sensors : { cpuTemperature: null, gpus: [] };
@@ -210,7 +261,7 @@ class PerformanceMonitor extends EventEmitter {
     // Prefer NVML for NVIDIA cards; preserve LHM's AMD/Intel cards and stable IDs.
     const gpus = [...nvidia, ...sensors.gpus.filter(gpu => !nvidia.length || !/nvidia/i.test(gpu.id) || gpu.id === this.settings.gpuId)];
     const gpu = (this.settings.gpuId ? gpus.find(item => item.id === this.settings.gpuId) : gpus[0]) || null;
-    if (!this.settings.processName && now - this.sensorAt >= 6000) this.frames.setTarget('');
+    if (this.wantsFps && !this.settings.processName && now - this.sensorAt >= 6000) this.setCaptureTarget('');
     const frames = this.frames.sample();
     const total = this.system.totalmem();
     this.lastState = {
@@ -225,17 +276,13 @@ class PerformanceMonitor extends EventEmitter {
     this.generation += 1;
     if (this.timer) clearInterval(this.timer);
     this.timer = null;
-    for (const key of ['sensorChild', 'presentChild', 'nvidiaChild']) {
+    for (const key of ['sensorChild', 'nvidiaChild']) {
       const child = this[key]; this[key] = null; child?.kill();
     }
     // Terminating a Windows process does not necessarily stop its ETW session.
     // Clean up only our uniquely named session; never stop another capture.
-    if (this.presentSession) {
-      const { executable, name } = this.presentSession;
-      this.presentSession = null;
-      this.execute(executable, ['--session_name', name, '--terminate_existing_session'],
-        { windowsHide: true, timeout: 2000, maxBuffer: 16 * 1024 }, () => {});
-    }
+    this.stopPresentMon();
+    this.presentTarget = null;
     this.lastState = this.emptyState();
     this.emit('state', this.lastState);
   }

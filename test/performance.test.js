@@ -14,6 +14,10 @@ test('performance preferences survive old settings and reject invalid executable
   assert.equal(normalizePerformance({ layout: 'invalid', theme: 'invalid' }).theme, 'graphite');
   assert.equal(normalizePerformance({ layout: '__proto__' }).layout, 'strip');
   assert.equal(normalizePerformance({ layout: 'compact', theme: 'minimal' }).layout, 'compact');
+  assert.equal(normalizePerformance({ updateRate: 'anything' }).updateRate, 'efficient');
+  assert.equal(normalizePerformance({ updateRate: 'responsive' }).updateRate, 'responsive');
+  assert.equal(normalizePerformance({ metrics: { cpuTemp: true, fps: false } }).metrics.cpuTemp, true);
+  assert.equal(normalizePerformance({ metrics: Object.fromEntries(['fps', 'frameTime', 'cpu', 'cpuTemp', 'gpu', 'gpuTemp', 'ram', 'vram'].map(key => [key, false])) }).metrics.cpu, true);
   assert.equal(normalizePerformance(null).enabled, false);
   const settings = normalizePerformance({ enabled: true, presentMonPath: 'C:\\Tools\\PresentMon.exe', processName: 'My Game.exe', opacity: 0, x: 120.6 });
   assert.equal(settings.presentMonPath, undefined);
@@ -124,16 +128,16 @@ test('performance window stays click-through, respects visibility and retains dr
   const settings = sanitizeSettings({ performance: { enabled: true } });
   manager.apply(settings);
   assert.equal(manager.window.bounds.height, 34);
-  assert.equal(manager.window.bounds.width, 560);
+  assert.equal(manager.window.bounds.width, 470);
   manager.apply({ ...settings, performance: { ...settings.performance, layout: 'compact', anchor: 'bottom-right' } });
-  assert.equal(manager.window.bounds.height, 64);
-  assert.equal(manager.window.bounds.y, 1080 - 24 - 64);
-  assert.deepEqual(dimensions('detailed'), { width: 300, height: 140 });
+  assert.equal(manager.window.bounds.height, 92);
+  assert.equal(manager.window.bounds.y, 1080 - 24 - 92);
+  assert.deepEqual(dimensions('detailed'), { width: 300, height: 174 });
   assert.equal(manager.window.ignored, true);
   assert.equal(manager.window.focusable, false);
   assert.equal(manager.window.visible, true);
   manager.apply({ ...settings, visible: false });
-  assert.equal(manager.window.visible, false);
+  assert.equal(manager.window, null);
   manager.apply({ ...settings, locked: false });
   assert.equal(manager.window.ignored, false);
   manager.positioning = false;
@@ -165,6 +169,37 @@ test('automatic FPS changes PID atomically and never merges same-named processes
   frames.setTarget('');
   frames.add('game.exe,11,a,20');
   assert.equal(frames.sample().fps, null);
+});
+
+test('automatic capture starts PresentMon only for one foreground process and stops on desktop', () => {
+  const children = [], executions = [];
+  const monitor = new PerformanceMonitor({ sensorScript: 'sensors.ps1', presentMonPath: 'PresentMon.exe', platform: 'win32',
+    spawnProcess: (file, args) => { const child = fakeChild(); children.push({ file, args, child }); return child; },
+    execute: (file, args, options, callback) => { const child = fakeChild(); executions.push({ file, args, callback, child }); return child; },
+  });
+  monitor.configure({ enabled: true, metrics: { fps: true, gpu: false, gpuTemp: false, vram: false, cpuTemp: false } });
+  assert.equal(children.filter(item => item.file === 'PresentMon.exe').length, 0);
+  monitor.updateForeground({ foregroundProcessName: 'game.exe', foregroundProcessId: 44 });
+  const capture = children.find(item => item.file === 'PresentMon.exe');
+  assert.deepEqual(capture.args.slice(0, 2), ['--process_id', '44']);
+  assert.equal(capture.args.includes('--exclude'), false);
+  monitor.updateForeground({ foregroundProcessName: 'explorer.exe', foregroundProcessId: 55 });
+  assert.equal(capture.child.killed, true);
+  assert.ok(executions.some(item => item.args.includes('--terminate_existing_session')));
+  monitor.stop();
+});
+
+test('hidden provider metrics skip sensor and GPU helper work', () => {
+  const children = [], executions = [];
+  const monitor = new PerformanceMonitor({ sensorScript: 'sensors.ps1', platform: 'win32',
+    spawnProcess: (file, args) => { const child = fakeChild(); children.push({ file, args, child }); return child; },
+    execute: (file, args, options, callback) => { const child = fakeChild(); executions.push({ file, args, callback, child }); return child; },
+  });
+  monitor.configure({ enabled: true, metrics: { fps: false, frameTime: false, cpu: true, cpuTemp: false, gpu: false, gpuTemp: false, ram: true, vram: false } });
+  assert.equal(children.length, 0);
+  assert.equal(executions.length, 0);
+  assert.equal(monitor.sampleInterval, 2000);
+  monitor.stop();
 });
 
 test('foreground capture keeps game while Control Center is focused and clears desktop/stale targets', () => {

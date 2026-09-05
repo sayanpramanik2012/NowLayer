@@ -81,7 +81,7 @@ class Timekeeper extends EventEmitter {
   }
 
   start() {
-    if (!this.interval) this.interval = setInterval(() => this.tick(), 250);
+    if (!this.interval) this.interval = setInterval(() => this.tick(), 1000);
   }
 
   stop() {

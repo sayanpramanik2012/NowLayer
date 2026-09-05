@@ -134,7 +134,7 @@ details[open] summary::after { content:'−'; }
 .demo-controls label { display: grid; gap: 7px; font-size: 12px; color: var(--muted, #b3b3c7); }
 .demo-controls select { background: #232330; color: #fafaff; border: 1px solid #525266; border-radius: 8px; padding: 9px; max-width: 100%; }
 .demo-tray { width: 100%; overflow-x: auto; padding: 14px 2px; }
-#statsDemo { width: 560px; height: 34px; padding: 0 12px; box-sizing: border-box; border-radius: 8px; background: #202129; color: #fafaff; box-shadow: none; }
+#statsDemo { width: 470px; height: 34px; padding: 0 12px; box-sizing: border-box; border-radius: 8px; background: #202129; color: #fafaff; box-shadow: none; }
 #statsDemo .stats-title { display: none; }
 #statsDemo .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); height: 100%; gap: 10px; align-items: center; }
 #statsDemo .stats-row > div { display: flex; gap: 5px; align-items: baseline; min-width: 0; }
