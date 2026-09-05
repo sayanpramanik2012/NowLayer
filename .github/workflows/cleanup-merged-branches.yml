@@ -1,4 +1,4 @@
-# One-time cleanup requested with the performance/website update (PR #8).
+# One-time cleanup requested with the 1.1.0 update (PR #9).
 # Normal pushes do not trigger this workflow unless this file itself changes.
 name: Clean up merged branches
 on:
@@ -42,20 +42,12 @@ jobs:
                       return None
                   raise
 
-          candidates = [
-              # This branch was reused after PR #2; its final tree equals PR #3.
-              ('agent/timers-alarms', 3, '9a3a9397e3f0d0be92d41686f7814b7a5ca1d797'),
-              ('agent/time-widget-startup-fix', 3, '2bd0709e9a21d4ca8709201410752c8794e64f38'),
-              ('agent/reliable-alert-dismissal', 4, '5f707fa286036d9af33c7b5aaf8f4bf91153f51a'),
-              ('agent/utility-mode-hotkeys', 5, 'c8556f249a5a7bcada51e925da1d1223bc72d954'),
-              ('agent/overlay-personalization', 7, 'a73f37805e9d014e0d62e5d695e0ab91e332701f'),
-              ('feat/performance-overlay', 8, None),
-          ]
+          candidates = [('feat/slim-performance-layouts', 9, None)]
           for branch, number, expected in candidates:
               pull = api(f'/pulls/{number}')
               if not pull or not pull['merged'] or pull['base']['ref'] != 'main':
                   raise RuntimeError(f'PR #{number} is not merged into main.')
-              proof_branch = 'agent/time-widget-startup-fix' if branch == 'agent/timers-alarms' else branch
+              proof_branch = branch
               if pull['head']['ref'] != proof_branch or pull['head']['repo']['full_name'] != repo:
                   raise RuntimeError(f'Unexpected source branch for PR #{number}.')
               expected = expected or pull['head']['sha']
