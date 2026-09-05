@@ -1,4 +1,4 @@
-# One-time cleanup requested with the 1.1.1 UI/performance update (PR #11).
+# One-time cleanup requested with the 1.1.2 FPS access and UI fix (PR #12).
 # Normal pushes do not trigger this workflow unless this file itself changes.
 name: Clean up merged branches
 on:
@@ -42,7 +42,7 @@ jobs:
                       return None
                   raise
 
-          candidates = [('feat/lean-customizable-ui', 11, None)]
+          candidates = [('fix/1.1.2-fps-access-ui', 12, None)]
           for branch, number, expected in candidates:
               pull = api(f'/pulls/{number}')
               if not pull or not pull['merged'] or pull['base']['ref'] != 'main':
