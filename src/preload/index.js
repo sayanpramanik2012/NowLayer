@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld('nowLayer', Object.freeze({
   },
   getState: () => ipcRenderer.invoke('nowlayer:get-state'),
   getResourceUsage: () => ipcRenderer.invoke('nowlayer:get-resource-usage'),
+  requestFpsPermission: () => ipcRenderer.invoke('nowlayer:request-fps-permission'),
   setSetting: (key, value) => ipcRenderer.invoke('nowlayer:set-setting', key, value),
   mediaAction: (action) => ipcRenderer.invoke('nowlayer:media-action', action),
   listCaptureSources: () => ipcRenderer.invoke('nowlayer:list-capture-sources'),

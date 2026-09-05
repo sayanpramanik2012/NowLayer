@@ -50,12 +50,11 @@ VRAM counters. Missing values are shown as unavailable, never as zero.
 
 The Windows installer includes the standalone PresentMon Console **2.3.1** executable and its MIT license. No separate installation, download, or path selection is needed by users. Builds fetch the pinned official x64 release, verify its SHA-256, and package it under `resources/presentmon`. Installed capture works offline. Legacy custom helper paths are discarded.
 
-PresentMon needs ETW access. Its
-[permissions guidance](https://github.com/GameTechDev/PresentMon#user-access-denied)
-explains membership in **Performance Log Users** and signing out/back in. Running
-NowLayer as administrator is an alternative when capture requires it. NowLayer
-never automatically elevates, installs a driver, or changes group membership.
-After correcting a launch or permission error, toggle performance off and on.
+PresentMon needs ETW access. The **Fix FPS access** button asks Windows for
+administrator approval and adds the current Windows account to the local
+**Performance Log Users** group—nothing else is installed or changed. Sign out
+and back in once so Windows gives the account a new access token, then toggle
+Performance off and on. Running NowLayer as administrator remains an alternative.
 
 FPS is **application present rate**, calculated from the mean of valid
 `MsBetweenPresents` intervals in each approximately one-second update. It is not

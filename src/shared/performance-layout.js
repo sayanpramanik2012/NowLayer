@@ -13,7 +13,9 @@
   function dimensions(layout, metrics = defaultMetrics) {
     const selected = Object.hasOwn(layouts, layout) ? layout : 'strip';
     const count = metricCount(metrics);
-    if (selected === 'strip') return { width: Math.min(700, Math.max(260, 26 + count * 74)), height: 34 };
+    // The strip stays shallow, but gives each reading enough horizontal room to
+    // avoid labels and values running into each other on high-DPI displays.
+    if (selected === 'strip') return { width: Math.min(820, Math.max(174, 24 + count * 96)), height: 34 };
     if (selected === 'compact') return { width: 360, height: count > 4 ? 92 : 64 };
     return { width: 300, height: 48 + Math.ceil(count / 2) * 42 };
   }

@@ -88,3 +88,9 @@ Media and Video PiP share one overlay. Turning media on stops PiP; stopping PiP 
 - Efficient mode samples every two seconds, launches FPS capture only for the foreground game's process ID, and skips unused sensor providers.
 - Video PiP offers 15, 24, and 30 FPS modes and stops its capture stream when overlays are hidden.
 - Overlays stay out of the Control Center; disabled/hidden windows and their media helper release memory, the timer scheduler wakes once per second, and Help reports NowLayer's live CPU and working-set memory.
+
+## New in 1.1.2
+
+- Fixed the Performance metric checkboxes so their switch styling cannot overlap the labels.
+- The slim strip gives each selected reading enough space to stay readable instead of running values together.
+- **Fix FPS access** performs the one-time Windows permission setup from Control Center after an administrator prompt; users only need to sign out and back in before retrying FPS.

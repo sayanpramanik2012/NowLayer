@@ -154,7 +154,8 @@
             <p>FPS capture is bundled with NowLayer. Turn on Performance from Home, then switch to your game. No extra download or executable path is needed. FPS measures application presents; displayed FPS and generated frames can differ.</p>
             <label class="setting-row"><div><strong>Optional game override</strong><span>Leave blank to follow the foreground app. Use game.exe to keep tracking one game.</span></div><input id="performanceProcess" type="text" placeholder="Automatic foreground app" maxlength="128"></label>
             <button id="savePerformanceProcess" class="secondary-button" type="button">Save capture target</button>
-            <p>If Windows blocks FPS access, add your account to the Performance Log Users group, sign out and back in, then turn Performance off and on. CPU, GPU, and memory readings continue to work.</p>
+            <div class="performance-actions"><button id="fixFpsPermission" class="secondary-button" type="button">Fix FPS access</button><span>One-time Windows setup. It asks for administrator approval, then needs one sign-out.</span></div>
+            <p>FPS needs Windows permission to read graphics timing. Select <strong>Fix FPS access</strong>, approve the Windows prompt, sign out and back in, then turn Performance off and on. CPU, GPU, and memory readings continue to work.</p>
             <p id="performanceMessage" role="status"></p>
           </article>
           <article class="panel performance-panel">

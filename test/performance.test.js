@@ -128,7 +128,7 @@ test('performance window stays click-through, respects visibility and retains dr
   const settings = sanitizeSettings({ performance: { enabled: true } });
   manager.apply(settings);
   assert.equal(manager.window.bounds.height, 34);
-  assert.equal(manager.window.bounds.width, 470);
+  assert.equal(manager.window.bounds.width, 600);
   manager.apply({ ...settings, performance: { ...settings.performance, layout: 'compact', anchor: 'bottom-right' } });
   assert.equal(manager.window.bounds.height, 92);
   assert.equal(manager.window.bounds.y, 1080 - 24 - 92);
@@ -148,11 +148,13 @@ test('performance window stays click-through, respects visibility and retains dr
   manager.dispose();
 });
 
-test('Windows sensor helper parses under Windows PowerShell', { skip: process.platform !== 'win32' }, () => {
+test('Windows performance helpers parse under Windows PowerShell', { skip: process.platform !== 'win32' }, () => {
   const { execFileSync } = require('node:child_process');
   const path = require('node:path');
-  const script = path.resolve(__dirname, '../scripts/performance-sensors.ps1').replace(/'/g, "''");
-  execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', `$tokens=$null; $errors=$null; [System.Management.Automation.Language.Parser]::ParseFile('${script}', [ref]$tokens, [ref]$errors) | Out-Null; if ($errors.Count) { $errors | Out-String | Write-Error; exit 1 }`], { timeout: 10000 });
+  for (const name of ['performance-sensors.ps1', 'performance-enable-fps-access.ps1']) {
+    const script = path.resolve(__dirname, '../scripts', name).replace(/'/g, "''");
+    execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', `$tokens=$null; $errors=$null; [System.Management.Automation.Language.Parser]::ParseFile('${script}', [ref]$tokens, [ref]$errors) | Out-Null; if ($errors.Count) { $errors | Out-String | Write-Error; exit 1 }`], { timeout: 10000 });
+  }
 });
 
 test('automatic FPS changes PID atomically and never merges same-named processes', () => {

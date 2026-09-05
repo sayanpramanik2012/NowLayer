@@ -35,6 +35,9 @@ test('performance overlay keeps diagnostics off the game surface', () => {
   assert.match(view, /removeAttribute\('title'\)/);
   assert.match(view, /'n\/a'/);
   assert.match(styles, /\.home-module input\[type="checkbox"\]\s*\{\s*width:\s*40px/);
+  assert.match(styles, /\.metric-picker input\[type="checkbox"\]::after,/);
+  assert.match(read('src/control/index.html'), /id="fixFpsPermission"/);
+  assert.match(read('src/preload/index.js'), /requestFpsPermission/);
 });
 
 test('renderer pages enforce a restrictive content security policy', () => {
