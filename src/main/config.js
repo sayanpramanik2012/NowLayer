@@ -59,6 +59,7 @@ const DEFAULT_SETTINGS = Object.freeze({
   anchor: 'bottom-right',
   margin: 24,
   hotkeys: DEFAULT_HOTKEYS,
+  performance: require('./performance-settings').normalizePerformance(),
   utilities: {
     showClock: false,
     showTimer: true,
@@ -127,6 +128,7 @@ function sanitizeSettings(candidate = {}) {
       96,
     ),
     hotkeys: sanitizeHotkeys(candidate.hotkeys),
+    performance: require('./performance-settings').normalizePerformance(candidate.performance),
     utilities: require('./timekeeper').normalizeUtilities(candidate.utilities),
     bounds: {
       x: Number.isFinite(sourceBounds.x) ? Math.round(sourceBounds.x) : null,

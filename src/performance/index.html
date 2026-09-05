@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'">
+  <title>NowLayer Performance</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main id="widget" class="widget">
+    <header><span class="brand">N</span><span>PERFORMANCE</span><span id="liveStatus">WAITING</span></header>
+    <div class="metrics">
+      <section><small>GAME FPS</small><strong id="fps">—</strong><span id="frameTime">No frames</span></section>
+      <section><small>CPU</small><strong id="cpu">—</strong><span id="cpuTemp">Temp unavailable</span></section>
+      <section><small>GPU</small><strong id="gpu">—</strong><span id="gpuTemp">Temp unavailable</span></section>
+      <section><small>RAM</small><strong id="ram">—</strong><span id="vram">VRAM unavailable</span></section>
+    </div>
+    <footer id="source">Enable performance in Control Center</footer>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

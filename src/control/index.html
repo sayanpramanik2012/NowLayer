@@ -21,6 +21,7 @@
           <button class="nav-button is-active" type="button" data-view="home"><svg class="material-icon"><use href="../assets/material-icons.svg#home"></use></svg>Home</button>
           <button class="nav-button" type="button" data-view="video"><svg class="material-icon"><use href="../assets/material-icons.svg#pip"></use></svg>Video PiP</button>
           <button class="nav-button" type="button" data-view="timers"><svg class="material-icon"><use href="../assets/material-icons.svg#settings"></use></svg>Clock & timers</button>
+          <button class="nav-button" type="button" data-view="performance"><svg class="material-icon"><use href="../assets/material-icons.svg#settings"></use></svg>Performance</button>
           <button class="nav-button" type="button" data-view="position"><svg class="material-icon"><use href="../assets/material-icons.svg#open-with"></use></svg>Position</button>
           <button class="nav-button" type="button" data-view="settings"><svg class="material-icon"><use href="../assets/material-icons.svg#settings"></use></svg>Settings</button>
           <button class="nav-button" type="button" data-view="help"><svg class="material-icon"><use href="../assets/material-icons.svg#help"></use></svg>Help & diagnostics</button>
@@ -93,6 +94,40 @@
           <article class="tip-card"><svg class="material-icon"><use href="../assets/material-icons.svg#info"></use></svg><p><strong>How this differs from browser PiP</strong> NowLayer captures the selected window into its own overlay. Keep the source window open and not minimized. Protected streaming services may intentionally show a black frame; YouTube and ordinary local video are the best first tests.</p></article>
         </section>
 
+        <section class="view" data-view-panel="performance">
+          <header class="page-header"><div><p class="eyebrow">PERFORMANCE</p><h1>Your system, at a glance.</h1></div></header>
+          <article class="panel settings-list">
+            <label class="setting-row"><div><strong>Performance overlay</strong><span>Separate widget. Uses your lock and show/hide shortcuts.</span></div><input id="performanceEnabled" type="checkbox"></label>
+            <label class="setting-row"><div><strong>Position</strong><span>Unlock interaction to drag it to another monitor.</span></div><select id="performanceAnchor"><option value="top-left">Top left</option><option value="top-right">Top right</option><option value="bottom-left">Bottom left</option><option value="bottom-right">Bottom right</option><option value="manual">Custom position</option></select></label>
+            <label class="setting-row slider-row"><div><strong>Performance opacity</strong><span>Adjust only the performance widget.</span></div><div class="slider-wrap"><input id="performanceOpacity" type="range" min="30" max="100" step="1"><output id="performanceOpacityValue">94%</output></div></label>
+            <label class="setting-row"><div><strong>GPU</strong><span>Select the adapter you want to monitor.</span></div><select id="performanceGpu"><option value="">Automatic</option></select></label>
+          </article>
+          <article class="panel performance-panel">
+            <h2>Live readings</h2>
+            <div class="performance-readings">
+              <div><small>GAME FPS</small><strong id="performanceFps">—</strong><span id="performanceFrameTime">No frames</span></div>
+              <div><small>CPU</small><strong id="performanceCpu">—</strong><span id="performanceCpuTemp">Temperature unavailable</span></div>
+              <div><small>GPU</small><strong id="performanceGpuUsage">—</strong><span id="performanceGpuTemp">Temperature unavailable</span></div>
+              <div><small>RAM</small><strong id="performanceRam">—</strong><span id="performanceVram">VRAM unavailable</span></div>
+            </div>
+            <p id="performanceStatus" role="status">Enable performance monitoring to start.</p>
+            <p id="performanceGpuSource"></p>
+          </article>
+          <article class="panel performance-panel">
+            <h2>Game FPS setup</h2>
+            <p>Choose the official PresentMon Console executable (2.x or later), then enter your game's process name from Task Manager → Details. FPS measures the selected game's presents; frame generation and displayed FPS can differ.</p>
+            <div class="performance-actions"><button id="choosePresentMon" class="secondary-button" type="button">Choose PresentMon .exe</button><span id="presentMonName">Not configured</span></div>
+            <label class="performance-game">Game executable<input id="performanceProcess" type="text" maxlength="260" placeholder="game.exe" spellcheck="false"><button id="savePerformanceProcess" class="secondary-button" type="button">Apply</button></label>
+            <p>PresentMon needs permission to collect ETW events. If access is denied, use an account in Windows' Performance Log Users group (sign out and back in afterward), or run NowLayer as administrator for capture. Toggle monitoring off and on to retry.</p>
+            <p id="performanceMessage" role="status"></p>
+          </article>
+          <article class="panel performance-panel">
+            <h2>Temperatures & GPU support</h2>
+            <p>NVIDIA readings use the driver’s nvidia-smi utility. For CPU temperature and AMD/Intel GPU sensors, run Libre Hardware Monitor with its WMI provider enabled and the required sensor permissions. Keep it running while playing. Missing or stale sensors show “unavailable”.</p>
+            <p>CPU and RAM work without extra tools. Monitoring pauses when the overlay is hidden. Use borderless-windowed games as with the media overlay.</p>
+          </article>
+        </section>
+
         <section class="view" data-view-panel="position">
           <header class="page-header"><div><p class="eyebrow">PLACEMENT</p><h1>Put it where it stays out of the way.</h1></div></header>
           <div class="two-column">
@@ -158,13 +193,13 @@
             <label class="setting-row"><div><strong>Show overlay</strong><span>Display NowLayer above desktop apps and borderless-windowed games.</span></div><input id="visibleToggle" type="checkbox" role="switch"></label>
             <label class="setting-row"><div><strong>Launch when Windows starts</strong><span>Keep NowLayer ready in the system tray after you sign in.</span></div><input id="startupToggle" type="checkbox" role="switch"></label>
             <label class="setting-row"><div><strong>Lock interaction by default</strong><span>Mouse clicks pass through to the game while locked.</span></div><input id="lockedToggle" type="checkbox" role="switch"></label>
-            <label class="setting-row"><div><strong>Compact layout</strong><span>Use a smaller 420 x 76 media card. Video PiP always uses 480 x 270.</span></div><input id="compactToggle" type="checkbox" role="switch"></label>
+            <label class="setting-row"><div><strong>Compact layout</strong><span>Use a smaller 420 x 76 media card. Video PiP uses its own size setting.</span></div><input id="compactToggle" type="checkbox" role="switch"></label>
             <label class="setting-row"><div><strong>Show play/pause on Video PiP</strong><span>Display one floating media button over the captured video.</span></div><input id="pipControlsToggle" type="checkbox" role="switch"></label>
             <div class="setting-row"><div><strong>PiP button position</strong><span>Choose which corner holds the floating play/pause button.</span></div><select id="pipControlPositionSelect" aria-label="PiP button position"><option value="top-right">Top right</option><option value="top-left">Top left</option><option value="bottom-right">Bottom right</option><option value="bottom-left">Bottom left</option></select></div>
             <label class="setting-row slider-row"><div><strong>Media overlay opacity</strong><span>Adjust only the music and now-playing card.</span></div><div class="slider-wrap"><input id="mediaOpacitySlider" type="range" min="30" max="100" step="1"><output id="mediaOpacityValue">94%</output></div></label>
             <label class="setting-row slider-row"><div><strong>Video PiP opacity</strong><span>Adjust only the captured video window.</span></div><div class="slider-wrap"><input id="videoOpacitySlider" type="range" min="30" max="100" step="1"><output id="videoOpacityValue">100%</output></div></label>
           </article>
-          <article class="panel hotkey-panel"><h2>Your hotkeys</h2><p>Click a shortcut, then press the keys you want together. Press Escape to cancel.</p><button id="visibilityHotkeyInput" class="hotkey-recorder" type="button"><span>Show / hide media overlay</span><kbd>Ctrl + Shift + M</kbd></button><button id="lockHotkeyInput" class="hotkey-recorder" type="button"><span>Lock / unlock interaction</span><kbd>Ctrl + Shift + L</kbd></button><button id="dismissHotkeyInput" class="hotkey-recorder" type="button"><span>Dismiss timer or alarm</span><kbd>Ctrl + Shift + A</kbd></button><p id="hotkeyMessage" class="copy-confirmation" role="status"></p></article>
+          <article class="panel hotkey-panel"><h2>Your hotkeys</h2><p>Click a shortcut, then press the keys you want together. Press Escape to cancel.</p><button id="visibilityHotkeyInput" class="hotkey-recorder" type="button"><span>Show / hide media & performance</span><kbd>Ctrl + Shift + M</kbd></button><button id="lockHotkeyInput" class="hotkey-recorder" type="button"><span>Lock / unlock interaction</span><kbd>Ctrl + Shift + L</kbd></button><button id="dismissHotkeyInput" class="hotkey-recorder" type="button"><span>Dismiss timer or alarm</span><kbd>Ctrl + Shift + A</kbd></button><p id="hotkeyMessage" class="copy-confirmation" role="status"></p></article>
           <button id="resetButton" class="danger-button" type="button">Reset NowLayer settings</button>
         </section>
 
@@ -193,5 +228,6 @@
       </main>
     </div>
     <script src="app.js"></script>
+    <script src="performance.js"></script>
   </body>
 </html>
