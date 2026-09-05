@@ -186,11 +186,16 @@ test('foreground capture keeps game while Control Center is focused and clears d
 test('Windows build includes the pinned standalone FPS helper and license', { skip: process.platform !== 'win32' }, () => {
   const fs = require('node:fs');
   const path = require('node:path');
-  const { execFileSync } = require('node:child_process');
+  const { spawnSync } = require('node:child_process');
   const { SHA256, destination, digest } = require('../scripts/prepare-presentmon');
   assert.equal(digest(fs.readFileSync(destination)), SHA256);
   assert.match(fs.readFileSync(path.join(path.dirname(destination), 'LICENSE.txt'), 'utf8'), /Permission is hereby granted/);
-  const help = execFileSync(destination, ['--help'], { encoding: 'utf8', timeout: 10000 });
+  // PresentMon 2.3.1 deliberately prints help on stderr and returns 1.
+  const result = spawnSync(destination, ['--help'], { encoding: 'utf8', timeout: 10000 });
+  assert.equal(result.error, undefined);
+  assert.equal(result.status, 1);
+  const help = result.stderr;
+  assert.match(help, /^PresentMon 2\.3\.1/);
   assert.match(help, /v1_metrics/);
   assert.match(help, /process_name/);
 });
