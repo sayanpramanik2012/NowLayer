@@ -1,0 +1,14 @@
+:root { color-scheme: dark; --opacity: .94; }
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: transparent; color: #f7f7fb; font-family: 'Segoe UI', sans-serif; user-select: none; }
+.widget { height: 100%; padding: 13px 15px; border: 1px solid #ffffff26; border-radius: 16px; background: linear-gradient(135deg, rgba(38,39,53,var(--opacity)), rgba(13,14,21,var(--opacity))); -webkit-app-region: drag; }
+.widget.is-locked { -webkit-app-region: no-drag; }
+header { display: flex; align-items: center; gap: 7px; font-size: 9px; font-weight: 700; letter-spacing: .1em; color: #c7c8d5; }
+.brand { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 6px; color: white; background: linear-gradient(135deg, #ff5679, #a24af5); font-size: 12px; }
+#liveStatus { margin-left: auto; color: #83e5ba; font-size: 8px; }
+.metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; margin-top: 22px; }
+section { min-width: 0; }
+small { color: #a9adbf; font-size: 8px; font-weight: 700; letter-spacing: .08em; }
+strong { display: block; margin: 6px 0; font-size: 21px; font-weight: 650; font-variant-numeric: tabular-nums; white-space: nowrap; }
+section span { display: block; min-height: 25px; color: #acafc3; font-size: 9px; line-height: 1.4; }
+footer { margin-top: 13px; border-top: 1px solid #ffffff15; padding-top: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #a9adbf; font-size: 9px; }

@@ -442,3 +442,12 @@ select:disabled { cursor: default; opacity: 0.42; }
   .status-grid { grid-template-columns: 1fr; }
   .welcome-card { align-items: flex-start; flex-direction: column; }
 }
+.performance-panel { margin-top: 14px; }
+.performance-readings { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+.performance-readings small { color: var(--muted); font-size: 9px; }
+.performance-readings strong { display: block; margin: 7px 0; font-size: 20px; font-variant-numeric: tabular-nums; }
+.performance-readings span { color: var(--muted); font-size: 10px; }
+.performance-actions, .performance-game { display: flex; align-items: center; gap: 12px; margin-top: 16px; font-size: 11px; }
+.performance-actions span { overflow-wrap: anywhere; color: var(--muted); }
+.performance-game input { flex: 1; min-width: 0; padding: 9px; background: #111117; border: 1px solid #ffffff26; border-radius: 7px; color: #fff; }
+#performanceMessage { color: #fcd34d; }

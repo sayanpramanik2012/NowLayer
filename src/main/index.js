@@ -23,6 +23,8 @@ const {
 } = require('./config');
 const { MediaMonitor } = require('./media-monitor');
 const { OverlayManager } = require('./overlay-manager');
+const { PerformanceMonitor } = require('./performance-monitor');
+const { PerformanceWindow } = require('./performance-window');
 const { Timekeeper } = require('./timekeeper');
 const {
   findSelectedSource,
@@ -59,6 +61,9 @@ const overlayManager = new OverlayManager({
   preloadPath,
 });
 
+const performanceMonitor = new PerformanceMonitor({ sensorScript: path.join(scriptsPath, 'performance-sensors.ps1') });
+const performanceWindow = new PerformanceWindow({ app, BrowserWindow, screen, preloadPath, rendererPath: path.join(__dirname, '..', 'performance', 'index.html') });
+
 let settingsPath = '';
 let settingsSaveTimer = null;
 let mediaState = mediaMonitor.lastState;
@@ -73,6 +78,7 @@ function currentState() {
   const utilities = timekeeper?.getState() ?? overlayManager.settings.utilities;
   return {
     media: mediaState,
+    performance: performanceMonitor.lastState,
     settings: overlayManager.settings,
     platform: overlayManager.getStatus(),
     video: videoState,
@@ -145,6 +151,7 @@ function configureDisplayCapture() {
 function broadcastState() {
   const state = currentState();
   overlayManager.broadcast('nowlayer:state', state);
+  performanceWindow.broadcast('nowlayer:state', state);
   if (controlWindow && !controlWindow.isDestroyed() && !controlWindow.webContents.isDestroyed()) {
     controlWindow.webContents.send('nowlayer:state', state);
   }
@@ -246,6 +253,7 @@ function scheduleSettingsSave(settings) {
 
 overlayManager.on('settings-changed', (settings) => {
   scheduleSettingsSave(settings);
+  syncPerformance();
   updateTrayMenu();
   broadcastState();
 });
@@ -256,6 +264,21 @@ mediaMonitor.on('state', (state) => {
 });
 mediaMonitor.on('diagnostic', (message) => {
   console.warn(`[media] ${message}`);
+});
+
+function syncPerformance() {
+  const settings = overlayManager.settings;
+  performanceWindow.apply(settings);
+  performanceMonitor.configure({ ...settings.performance, enabled: settings.performance.enabled && settings.visible && !smokeTestMode });
+}
+performanceWindow.on('position', position => {
+  overlayManager.updateSettings({ performance: { ...overlayManager.settings.performance, ...position } });
+});
+performanceMonitor.on('state', state => {
+  performanceWindow.broadcast('nowlayer:performance', state);
+  if (controlWindow && !controlWindow.isDestroyed() && !controlWindow.webContents.isDestroyed()) {
+    controlWindow.webContents.send('nowlayer:performance', state);
+  }
 });
 
 ipcMain.handle('nowlayer:get-state', () => currentState());
@@ -275,8 +298,16 @@ ipcMain.handle('nowlayer:set-setting', (_event, key, value) => {
     'anchor',
     'utilities',
     'hotkeys',
+    'performance',
   ]);
   if (!allowed.has(key)) throw new Error('Unsupported setting.');
+  if (key === 'performance') {
+    // Executable selection is restricted to the Control Center's native picker.
+    if (!controlWindow || _event.sender !== controlWindow.webContents) throw new Error('Open Control Center to change performance settings.');
+    const patch = value && typeof value === 'object' ? value : {};
+    const previous = overlayManager.settings.performance;
+    return overlayManager.updateSettings({ performance: { ...previous, ...patch, presentMonPath: previous.presentMonPath } });
+  }
   if (key === 'utilities') {
     timekeeper.update(value);
     return overlayManager.settings;
@@ -291,6 +322,14 @@ ipcMain.handle('nowlayer:set-setting', (_event, key, value) => {
     return overlayManager.updateSettings({ hotkeys: requested });
   }
   return overlayManager.updateSettings({ [key]: value });
+});
+
+ipcMain.handle('nowlayer:choose-presentmon', async (event) => {
+  if (!controlWindow || event.sender !== controlWindow.webContents) throw new Error('Open Control Center to choose PresentMon.');
+  const result = await dialog.showOpenDialog(controlWindow, { title: 'Choose PresentMon Console executable (2.x or later)', properties: ['openFile'], filters: [{ name: 'PresentMon Console', extensions: ['exe'] }] });
+  if (result.canceled || !result.filePaths[0]) return null;
+  overlayManager.updateSettings({ performance: { ...overlayManager.settings.performance, presentMonPath: result.filePaths[0] } });
+  return overlayManager.settings;
 });
 
 ipcMain.handle('nowlayer:hotkey-capture', (_event, active) => {
@@ -385,6 +424,7 @@ ipcMain.handle('nowlayer:reset-settings', () => {
   const defaults = sanitizeSettings(DEFAULT_SETTINGS);
   timekeeper?.update(defaults.utilities);
   overlayManager.setSettings(defaults);
+  syncPerformance();
   scheduleSettingsSave(defaults);
   updateTrayMenu();
   broadcastState();
@@ -456,6 +496,8 @@ app.on('before-quit', () => {
   if (settingsPath && !smokeTestMode) {
     try { saveSettings(settingsPath, overlayManager.settings); } catch { /* best effort */ }
   }
+  performanceMonitor.stop();
+  performanceWindow.dispose();
   mediaMonitor.stop();
   timekeeper?.stop();
   globalShortcut.unregisterAll();

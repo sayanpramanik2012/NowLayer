@@ -1,280 +1,122 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#0b0b10">
-    <meta
-      name="description"
-      content="NowLayer is a standalone Windows overlay that keeps music controls and video PiP visible above borderless-windowed games."
-    >
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="default-src 'self'; connect-src https://api.github.com; img-src 'self' data:; style-src 'self'; script-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'"
-    >
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="NowLayer">
-    <meta property="og:title" content="NowLayer — Your media. Your screen. Your rules.">
-    <meta
-      property="og:description"
-      content="A game-safe music and video overlay for Windows. Standalone, customizable, and click-through when locked."
-    >
-    <meta property="og:url" content="https://sayanpramanik2012.github.io/NowLayer/">
-    <meta property="og:image" content="https://sayanpramanik2012.github.io/NowLayer/assets/control-center.png">
-    <meta property="og:image:alt" content="The NowLayer Control Center on Windows">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="NowLayer — Stay in the game">
-    <meta
-      name="twitter:description"
-      content="Keep music controls and video PiP visible above borderless-windowed games."
-    >
-    <link rel="canonical" href="https://sayanpramanik2012.github.io/NowLayer/">
-    <link rel="icon" type="image/png" href="assets/app-icon.png">
-    <link rel="apple-touch-icon" href="assets/app-icon.png">
-    <link rel="manifest" href="manifest.webmanifest">
-    <link rel="stylesheet" href="styles.css">
-    <title>NowLayer — Game-safe media overlay for Windows</title>
-  </head>
-  <body>
-    <a class="skip-link" href="#main">Skip to content</a>
-
-    <header class="site-header" id="top">
-      <div class="header-inner">
-        <a class="brand" href="#top" aria-label="NowLayer home">
-          <img src="assets/app-icon.png" width="40" height="40" alt="">
-          <span>NowLayer</span>
-        </a>
-        <button
-          class="menu-button"
-          id="menuButton"
-          type="button"
-          aria-expanded="false"
-          aria-controls="siteNav"
-          aria-label="Open navigation"
-        >
-          <span></span><span></span><span></span>
-        </button>
-        <nav class="site-nav" id="siteNav" aria-label="Primary navigation">
-          <a href="#features">Features</a>
-          <a href="#showcase">See it in action</a>
-          <a href="#compatibility">Compatibility</a>
-          <a href="https://github.com/sayanpramanik2012/NowLayer" rel="noopener">GitHub</a>
-          <a class="nav-download" href="https://github.com/sayanpramanik2012/NowLayer/releases/latest">Download</a>
-        </nav>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101116">
+  <meta name="description" content="Music, video PiP, game FPS, hardware stats, and timers above your Windows games. Customize each overlay and keep mouse input with your game.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src https://api.github.com; img-src 'self' data:; style-src 'self'; script-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="NowLayer">
+  <meta property="og:title" content="NowLayer — Stay in the game">
+  <meta property="og:description" content="Your music, video, performance stats, and time. In view, while you play.">
+  <meta property="og:url" content="https://sayanpramanik2012.github.io/NowLayer/">
+  <meta property="og:image" content="https://sayanpramanik2012.github.io/NowLayer/assets/control-center.png">
+  <meta property="og:image:alt" content="The NowLayer Control Center on Windows">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="NowLayer — Stay in the game">
+  <meta name="twitter:description" content="Music, video PiP, performance stats, and timers above borderless-windowed games.">
+  <link rel="canonical" href="https://sayanpramanik2012.github.io/NowLayer/">
+  <link rel="icon" type="image/png" href="assets/app-icon.png">
+  <link rel="apple-touch-icon" href="assets/app-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+  <title>NowLayer — Media & performance overlay for Windows</title>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header" id="top">
+    <div class="header-inner shell">
+      <a class="brand" href="#top" aria-label="NowLayer home"><img src="assets/app-icon.png" width="36" height="36" alt=""><span>NowLayer</span></a>
+      <button class="menu-button" id="menuButton" type="button" aria-expanded="false" aria-controls="siteNav" aria-label="Open navigation">Menu</button>
+      <nav class="site-nav" id="siteNav" aria-label="Primary navigation">
+        <a href="#features">Features</a><a href="#performance">Performance</a><a href="#setup">Get started</a><a href="#faq">FAQ</a>
+        <a class="nav-download" data-download href="https://github.com/sayanpramanik2012/NowLayer/releases/latest">Download <span aria-hidden="true">↗</span></a>
+      </nav>
+    </div>
+  </header>
+  <main id="main">
+    <section class="hero shell" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow">FOR WINDOWS · BUILT AROUND YOUR GAME</p>
+        <h1 id="hero-title">Less Alt+Tab.<br><em>More play.</em></h1>
+        <p class="lede">Your music, videos, performance stats, and time—right where you need them. A small layer above your game that lets your clicks pass through.</p>
+        <div class="hero-actions"><a class="button primary" id="downloadButton" data-download href="https://github.com/sayanpramanik2012/NowLayer/releases/latest"><svg aria-hidden="true"><use href="assets/material-icons.svg#download"></use></svg>Download for Windows</a><a class="text-link" href="#showcase">Explore the overlays <span aria-hidden="true">↓</span></a></div>
+        <p class="release-meta" id="releaseMeta" aria-live="polite">Windows 10 / 11 · x64 · Download from GitHub</p>
+        <ul class="trust-list" aria-label="Product highlights"><li>No account</li><li>No subscription</li><li>Runs locally</li></ul>
       </div>
-    </header>
-
-    <main id="main">
-      <section class="hero section-shell" aria-labelledby="hero-title">
-        <div class="hero-copy">
-          <p class="eyebrow"><span></span> Standalone Windows media overlay</p>
-          <h1 id="hero-title">Keep your media in sight.<br><em>Keep your game in focus.</em></h1>
-          <p class="hero-lede">
-            NowLayer puts live music controls and video PiP above borderless-windowed games—then gets out of
-            the way with true click-through input when locked.
-          </p>
-          <div class="hero-actions">
-            <a
-              class="button button-primary"
-              id="downloadButton"
-              href="https://github.com/sayanpramanik2012/NowLayer/releases/latest"
-            >
-              <svg aria-hidden="true"><use href="assets/material-icons.svg#download"></use></svg>
-              Download for Windows
-            </a>
-            <a class="button button-secondary" href="#showcase">See how it works</a>
-          </div>
-          <p class="release-meta" id="releaseMeta" aria-live="polite">
-            Latest stable release · Windows 10 and 11 · x64
-          </p>
-          <ul class="trust-list" aria-label="NowLayer highlights">
-            <li><span></span>No Overwolf required</li>
-            <li><span></span>No account</li>
-            <li><span></span>Local-first</li>
-          </ul>
-        </div>
-
-        <div class="hero-product" aria-label="NowLayer product preview">
-          <div class="product-glow"></div>
-          <div class="window-frame">
-            <div class="window-bar" aria-hidden="true">
-              <span></span><span></span><span></span><strong>NOWLAYER CONTROL CENTER</strong>
-            </div>
-            <img
-              src="assets/control-center.png"
-              width="924"
-              height="672"
-              alt="NowLayer Control Center showing media, overlay, and input safety status"
-            >
-          </div>
-          <div class="overlay-shot">
-            <span class="overlay-label">ALWAYS ON TOP</span>
-            <img
-              src="assets/compact-overlay.png"
-              width="428"
-              height="123"
-              alt="Compact NowLayer overlay showing a playing song with click-through locked"
-            >
-          </div>
-        </div>
-      </section>
-
-      <section class="proof-strip" aria-label="Product principles">
-        <div class="section-shell proof-grid">
-          <div><strong>Game-agnostic</strong><span>Designed for any borderless-windowed game</span></div>
-          <div><strong>System-wide media</strong><span>Works with players that publish Windows media sessions</span></div>
-          <div><strong>Your setup</strong><span>Position, opacity, controls, and size stay in your hands</span></div>
-        </div>
-      </section>
-
-      <section class="section section-shell" id="features" aria-labelledby="features-title">
-        <div class="section-heading">
-          <p class="eyebrow"><span></span> Built for the second screen you do not have</p>
-          <h2 id="features-title">Everything useful. Nothing between you and the game.</h2>
-          <p>One focused utility for the moments when Alt+Tab is one interruption too many.</p>
-        </div>
-
-        <div class="feature-grid">
-          <article class="feature-card feature-card-wide">
-            <span class="icon-wrap coral"><svg aria-hidden="true"><use href="assets/material-icons.svg#music"></use></svg></span>
-            <div>
-              <p class="card-kicker">LIVE NOW PLAYING</p>
-              <h3>Track information that keeps up</h3>
-              <p>See title, artist, artwork, playback state, and a timeline that advances live with the active Windows media session.</p>
-            </div>
-            <div class="mini-player" aria-hidden="true">
-              <span class="mini-art">N</span>
-              <div><strong>Stay in the moment</strong><small>NowLayer</small><i><b></b></i></div>
-              <span class="mini-play"><svg><use href="assets/material-icons.svg#pause"></use></svg></span>
-            </div>
-          </article>
-
-          <article class="feature-card">
-            <span class="icon-wrap violet"><svg aria-hidden="true"><use href="assets/material-icons.svg#pip"></use></svg></span>
-            <p class="card-kicker">VIDEO PIP</p>
-            <h3>Bring the window you already use</h3>
-            <p>Select a YouTube, browser, or video-player window, then resize its clean 16:9 overlay to fit your game.</p>
-          </article>
-
-          <article class="feature-card">
-            <span class="icon-wrap green"><svg aria-hidden="true"><use href="assets/material-icons.svg#mouse"></use></svg></span>
-            <p class="card-kicker">INPUT SAFETY</p>
-            <h3>Locked means truly click-through</h3>
-            <p>Mouse input passes to the game underneath. Unlock only when you want to move or control NowLayer.</p>
-          </article>
-
-          <article class="feature-card">
-            <span class="icon-wrap blue"><svg aria-hidden="true"><use href="assets/material-icons.svg#open-with"></use></svg></span>
-            <p class="card-kicker">YOUR PLACEMENT</p>
-            <h3>Snap it. Drag it. Make it yours.</h3>
-            <p>Choose any edge or corner, move it freely, and tune media, video, clock, and timer opacity independently.</p>
-          </article>
-
-          <article class="feature-card">
-            <span class="icon-wrap coral"><svg aria-hidden="true"><use href="assets/material-icons.svg#settings"></use></svg></span>
-            <p class="card-kicker">TIME UTILITY</p>
-            <h3>Your time, in your style</h3>
-            <p>Choose digital or analog, 12- or 24-hour time, optional seconds, and a separate clock or countdown widget.</p>
-          </article>
-
-          <article class="feature-card">
-            <span class="icon-wrap violet"><svg aria-hidden="true"><use href="assets/material-icons.svg#game"></use></svg></span>
-            <p class="card-kicker">YOUR SHORTCUTS</p>
-            <h3>Keys that fit your setup</h3>
-            <p>Click record and press your preferred show, lock, or dismiss combination. NowLayer checks it before saving.</p>
-          </article>
-
-          <article class="feature-card">
-            <span class="icon-wrap amber"><svg aria-hidden="true"><use href="assets/material-icons.svg#game"></use></svg></span>
-            <p class="card-kicker">NO GAME PLUGINS</p>
-            <h3>One overlay across your library</h3>
-            <p>No game event integration or title-specific setup. If the game supports desktop overlays, NowLayer can stay with you.</p>
-          </article>
-        </div>
-      </section>
-
-      <section class="section section-shell showcase" id="showcase" aria-labelledby="showcase-title">
-        <div class="showcase-copy">
-          <p class="eyebrow"><span></span> One calm control center</p>
-          <h2 id="showcase-title">Set it once. Reach it when you need it.</h2>
-          <p>
-            The Control Center makes every important state visible: whether media is detected, whether the overlay is topmost,
-            and whether your mouse is safely passing through.
-          </p>
-          <ul class="check-list">
-            <li><span>01</span>Choose music mode or select a window for Video PiP.</li>
-            <li><span>02</span>Place the overlay and personalize its behavior.</li>
-            <li><span>03</span>Lock interaction and return to the game.</li>
-          </ul>
-          <div class="shortcut-row">
-            <div><small>SHOW / HIDE</small><kbd>Ctrl</kbd><b>+</b><kbd>Shift</kbd><b>+</b><kbd>M</kbd></div>
-            <div><small>LOCK / UNLOCK</small><kbd>Ctrl</kbd><b>+</b><kbd>Shift</kbd><b>+</b><kbd>L</kbd></div>
-          </div>
-        </div>
-        <figure class="showcase-figure">
-          <img
-            src="assets/control-center.png"
-            width="924"
-            height="672"
-            loading="lazy"
-            alt="NowLayer Control Center home screen"
-          >
-          <figcaption>Clear status, quick controls, and no mystery settings.</figcaption>
-        </figure>
-      </section>
-
-      <section class="section section-shell compatibility" id="compatibility" aria-labelledby="compatibility-title">
-        <div class="section-heading compact-heading">
-          <p class="eyebrow"><span></span> Honest compatibility</p>
-          <h2 id="compatibility-title">Built for the way modern games actually run.</h2>
-          <p>NowLayer is a normal Windows overlay, so display mode and protected video rules still matter.</p>
-        </div>
-        <div class="compatibility-grid">
-          <article class="compat-card works">
-            <span class="compat-mark">BEST</span>
-            <h3>Borderless windowed</h3>
-            <p>The recommended mode. NowLayer stays above the game while click-through keeps input where it belongs.</p>
-          </article>
-          <article class="compat-card">
-            <span class="compat-mark">SUPPORTED</span>
-            <h3>Windowed apps and games</h3>
-            <p>Use the same overlay on the desktop, in creative tools, or alongside any ordinary window.</p>
-          </article>
-          <article class="compat-card caution">
-            <span class="compat-mark">LIMITED</span>
-            <h3>Exclusive fullscreen and DRM</h3>
-            <p>Exclusive fullscreen may hide desktop overlays. Protected streaming video may intentionally capture as black.</p>
-          </article>
-        </div>
-      </section>
-
-      <section class="section-shell final-cta" aria-labelledby="cta-title">
-        <div>
-          <p class="eyebrow"><span></span> Ready when your next session starts</p>
-          <h2 id="cta-title">Stop checking your media.<br>Let it stay with you.</h2>
-          <p>Download NowLayer for Windows and keep the next track—or the next video—exactly where you want it.</p>
-        </div>
-        <a class="button button-primary" id="footerDownloadButton" href="https://github.com/sayanpramanik2012/NowLayer/releases/latest">
-          Download NowLayer
-        </a>
-      </section>
-    </main>
-
-    <footer class="site-footer">
-      <div class="section-shell footer-grid">
-        <div class="footer-brand">
-          <img src="assets/app-icon.png" width="34" height="34" alt="">
-          <div><strong>NowLayer</strong><span>Your media. Your screen. Your rules.</span></div>
-        </div>
-        <nav aria-label="Footer navigation">
-          <a href="https://github.com/sayanpramanik2012/NowLayer/releases/latest">Releases</a>
-          <a href="https://github.com/sayanpramanik2012/NowLayer/issues">Support</a>
-          <a href="https://github.com/sayanpramanik2012/NowLayer">GitHub</a>
-        </nav>
-        <p>© <span id="year">2026</span> Sayan Pramanik</p>
+      <div class="hero-product">
+        <div class="product-topline"><span>YOUR DESKTOP, WITH NOWLAYER</span><span>01 / CONTROL CENTER</span></div>
+        <figure class="app-preview"><img src="assets/control-center.png" width="924" height="672" alt="NowLayer media Control Center with playback and overlay settings"><figcaption>Keep the controls. Lose the interruptions.</figcaption></figure>
+        <div class="floating-player"><img src="assets/compact-overlay.png" width="428" height="123" alt="NowLayer’s compact music overlay"><span>Click-through when locked</span></div>
       </div>
-    </footer>
+    </section>
+    <div class="feature-rail shell" aria-label="Available overlays"><span>ONE APP. YOUR OWN LAYOUT.</span><p>Music controls</p><p>Video PiP</p><p>Performance</p><p>Clock & timers</p></div>
 
-    <script src="script.js"></script>
-  </body>
+    <section class="section shell" id="showcase" aria-labelledby="showcase-title">
+      <div class="section-heading"><p class="eyebrow">A LITTLE SPACE. A LOT WITHIN REACH.</p><h2 id="showcase-title">Pick your layer.</h2><p>Keep what matters on screen. Place each widget around your game.</p></div>
+      <div class="layer-explorer">
+        <div class="layer-tabs" role="tablist" aria-label="Overlay previews">
+          <button id="tab-media" type="button" role="tab" aria-selected="true" aria-controls="panel-media" data-layer="media"><span>01</span> Music & video</button>
+          <button id="tab-performance" type="button" role="tab" aria-selected="false" aria-controls="panel-performance" tabindex="-1" data-layer="performance"><span>02</span> Performance</button>
+          <button id="tab-time" type="button" role="tab" aria-selected="false" aria-controls="panel-time" tabindex="-1" data-layer="time"><span>03</span> Clock & timers</button>
+        </div>
+        <div class="layer-panel" id="panel-media" role="tabpanel" aria-labelledby="tab-media" tabindex="0">
+          <div class="layer-description"><span class="pill">MUSIC & VIDEO</span><h3>The next track.<br>Without the detour.</h3><p>See the title, artist, artwork, and playback progress from Windows media sessions. Or bring a browser or video-player window into a resizable 16:9 PiP.</p><p class="muted">Unlock to control or resize. Lock to send clicks back to the game.</p></div>
+          <div class="layer-visual media-visual"><img src="assets/compact-overlay.png" width="428" height="123" loading="lazy" alt="Compact now-playing media card"><span class="preview-caption">COMPACT MEDIA OVERLAY</span></div>
+        </div>
+        <div class="layer-panel" id="panel-performance" role="tabpanel" aria-labelledby="tab-performance" tabindex="0" hidden>
+          <div class="layer-description"><span class="pill">PERFORMANCE</span><h3>See how your<br>session is running.</h3><p>Game FPS and frame time, CPU/GPU usage and temperatures, RAM, and VRAM in a separate widget. Select your GPU and adjust its position and opacity.</p><a class="text-link" href="#performance">See metric requirements <span aria-hidden="true">↓</span></a></div>
+          <div class="layer-visual"><div class="stats-preview" aria-label="Illustrative performance readings, not a live measurement"><div class="stats-title">N <span>PERFORMANCE</span><small>EXAMPLE</small></div><div class="stats-row"><div><small>GAME FPS</small><strong>144</strong><span>6.9 ms</span></div><div><small>CPU</small><strong>32%</strong><span>58 °C</span></div><div><small>GPU</small><strong>87%</strong><span>67 °C</span></div><div><small>RAM</small><strong>12.4</strong><span>GiB</span></div></div></div><span class="preview-caption">ILLUSTRATIVE VALUES · SENSOR SETUP REQUIRED</span></div>
+        </div>
+        <div class="layer-panel" id="panel-time" role="tabpanel" aria-labelledby="tab-time" tabindex="0" hidden>
+          <div class="layer-description"><span class="pill">CLOCK & TIMERS</span><h3>One more match.<br>Still on schedule.</h3><p>Choose an analog or digital clock, 12- or 24-hour format, and optional seconds. Add a countdown or daily alarm with your own alert sound.</p><p class="muted">Keep time with your music, or use a separate clock and timer widget.</p></div>
+          <div class="layer-visual"><div class="time-preview"><div><small>LOCAL TIME</small><strong>21:48</strong></div><div><small>COUNTDOWN</small><strong>15:00</strong></div></div><span class="preview-caption">ILLUSTRATIVE CLOCK & COUNTDOWN</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section shell" id="features" aria-labelledby="features-title">
+      <div class="section-heading split-heading"><div><p class="eyebrow">YOUR SETUP, YOUR WAY</p><h2 id="features-title">Fits around<br>the way you play.</h2></div><p>Independent controls for each overlay. A single Control Center to keep it all together.</p></div>
+      <div class="feature-grid">
+        <article><svg aria-hidden="true"><use href="assets/material-icons.svg#mouse"></use></svg><h3>Clicks go to your game</h3><p>Locked overlays are click-through and non-focusable. Unlock when you want to interact.</p></article>
+        <article><svg aria-hidden="true"><use href="assets/material-icons.svg#open-with"></use></svg><h3>Make room for your HUD</h3><p>Snap to an edge or corner, or drag an overlay into place. Resize Video PiP without losing its 16:9 shape.</p></article>
+        <article><svg aria-hidden="true"><use href="assets/material-icons.svg#settings"></use></svg><h3>Dial in each layer</h3><p>Set separate opacity for music, video, clock, timer, and performance. Choose a compact media layout.</p></article>
+        <article><svg aria-hidden="true"><use href="assets/material-icons.svg#game"></use></svg><h3>Your keys, your shortcuts</h3><p>Click a shortcut and press your combination. Show or hide overlays, lock interaction, and dismiss alerts.</p></article>
+      </div>
+    </section>
+
+    <section class="section performance-section" id="performance" aria-labelledby="performance-title">
+      <div class="shell performance-layout"><div><p class="eyebrow">NOW WITH PERFORMANCE MONITORING</p><h2 id="performance-title">Real readings.<br>Clear requirements.</h2><p>CPU and RAM work immediately. Optional tools provide game FPS and hardware sensors. Missing readings stay unavailable.</p><p class="muted">No renderer FPS passed off as game FPS. Collection pauses when you hide the overlay.</p></div>
+        <div class="metric-table-wrap"><table class="metric-table"><caption>What each metric needs</caption><thead><tr><th scope="col">Metric</th><th scope="col">Data source</th></tr></thead><tbody>
+          <tr><th scope="row">CPU usage & RAM</th><td>Built in. No extra tools.</td></tr>
+          <tr><th scope="row">Game FPS & frame time</th><td><a href="https://github.com/GameTechDev/PresentMon/releases">PresentMon Console</a> (2.x or later) and your game’s executable name.</td></tr>
+          <tr><th scope="row">NVIDIA GPU & VRAM</th><td>The NVIDIA driver’s nvidia-smi utility, where supported.</td></tr>
+          <tr><th scope="row">CPU temperature & AMD/Intel GPU</th><td><a href="https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/releases">Libre Hardware Monitor</a> running with its WMI provider and sensor access.</td></tr>
+        </tbody></table><p class="table-note">Sensor availability depends on your hardware and permissions. FPS measures application presents; it can differ from displayed FPS with frame generation.</p></div>
+      </div>
+    </section>
+
+    <section class="section shell" id="setup" aria-labelledby="setup-title">
+      <div class="section-heading"><p class="eyebrow">GET STARTED</p><h2 id="setup-title">From download to game time.</h2></div>
+      <ol class="setup-steps"><li><span>01</span><h3>Install NowLayer</h3><p>Download the Windows x64 installer from GitHub Releases. Open NowLayer from your desktop or Start menu.</p></li><li><span>02</span><h3>Choose your overlays</h3><p>Start music, select a window for Video PiP, or enable Performance. Set positions, sizes, and opacity.</p></li><li><span>03</span><h3>Lock in and play</h3><p>Use borderless-windowed mode and lock interaction. Your mouse stays with the game.</p></li></ol>
+      <div class="shortcut-bar"><span>DEFAULT SHORTCUTS</span><div><kbd>Ctrl + Shift + M</kbd><span>Media & performance visibility</span></div><div><kbd>Ctrl + Shift + L</kbd><span>Lock / unlock</span></div><div><kbd>Ctrl + Shift + A</kbd><span>Dismiss an alert</span></div></div>
+    </section>
+
+    <section class="section shell faq-layout" id="faq" aria-labelledby="faq-title">
+      <div class="section-heading"><p class="eyebrow">BEFORE YOU DOWNLOAD</p><h2 id="faq-title">A few things<br>to know.</h2><a class="text-link" href="https://github.com/sayanpramanik2012/NowLayer/issues">Get help on GitHub <span aria-hidden="true">↗</span></a></div>
+      <div class="faq-list" id="compatibility">
+        <details open><summary>Which games and display modes work?</summary><p>Borderless-windowed mode is recommended. Normal windowed games and apps also work. Exclusive fullscreen can cover desktop overlays, so switch display mode if NowLayer disappears. Compatibility varies by game; “game-safe” describes click-through input, not an anti-cheat certification.</p></details>
+        <details><summary>Do I need extra software for performance stats?</summary><p>CPU usage and RAM need no setup. For game FPS, choose the official PresentMon Console executable under Performance and enter the game process name from Task Manager’s Details tab. For CPU temperature and AMD/Intel sensors, keep Libre Hardware Monitor running with WMI enabled. NVIDIA readings use nvidia-smi when available.</p></details>
+        <details><summary>Why does FPS or temperature show unavailable?</summary><p>The game may not be presenting frames, a sensor may be unsupported, or a provider may not be running. Check the status in Performance. PresentMon requires ETW access through the Performance Log Users group or administrator privileges; toggle monitoring off and on after correcting setup.</p></details>
+        <details><summary>Which music and video apps can I use?</summary><p>Music controls work with apps that publish Windows media sessions, including supported browser players, Spotify, and VLC. Video PiP captures your selected window. DRM-protected video may appear black, and minimized windows may stop updating.</p></details>
+        <details><summary>Does NowLayer require an account or subscription?</summary><p>No. NowLayer runs locally without an account or subscription. It does not replace any subscription required by your music or video provider. No Overwolf runtime is required.</p></details>
+        <details><summary>How do I move or resize an overlay?</summary><p>Unlock interaction with Ctrl + Shift + L, then drag the overlay. Video PiP can also be resized from its edges or with a size preset. Lock again before playing. Change shortcuts in Settings to match your setup.</p></details>
+      </div>
+    </section>
+    <section class="shell download-section" aria-labelledby="download-title"><div><p class="eyebrow">KEEP THE USEFUL THINGS CLOSE</p><h2 id="download-title">Your game.<br>Your layers.</h2><p>NowLayer for Windows 10 and 11 · x64</p></div><div><a class="button primary" id="footerDownloadButton" data-download href="https://github.com/sayanpramanik2012/NowLayer/releases/latest">Download NowLayer <span aria-hidden="true">↗</span></a><a class="release-link" href="https://github.com/sayanpramanik2012/NowLayer/releases">Release notes & previous versions</a></div></section>
+  </main>
+  <footer class="site-footer shell"><a class="brand" href="#top"><img src="assets/app-icon.png" width="30" height="30" alt=""><span>NowLayer</span></a><p>Built by Sayan Pramanik · <span id="year">2026</span></p><nav aria-label="Footer navigation"><a href="https://github.com/sayanpramanik2012/NowLayer">GitHub</a><a href="https://github.com/sayanpramanik2012/NowLayer/issues">Support</a><a href="https://github.com/sayanpramanik2012/NowLayer/releases">Releases</a></nav></footer>
+  <script src="script.js"></script>
+</body>
 </html>

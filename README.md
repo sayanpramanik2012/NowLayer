@@ -63,3 +63,10 @@ Found a game, player, or display setup that needs attention? Open a [GitHub issu
 For local testing and release procedures, see [TESTING.md](TESTING.md) and [docs/RELEASING.md](docs/RELEASING.md).
 
 Copyright © Sayan Pramanik. All rights reserved.
+
+## Performance overlay
+
+NowLayer also includes a separate FPS, CPU, GPU, temperature, RAM, and VRAM widget.
+Enable it in **Performance** in Control Center. CPU and RAM work immediately; game
+FPS requires PresentMon Console, and hardware temperatures require supported
+sensor providers. See [setup and data-source details](docs/PERFORMANCE.md).

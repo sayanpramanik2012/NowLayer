@@ -12,7 +12,7 @@ function read(relativePath) {
 test('landing page includes product content, metadata, and accessible navigation', () => {
   const html = read('site/index.html');
 
-  assert.match(html, /<title>NowLayer — Game-safe media overlay for Windows<\/title>/);
+  assert.match(html, /<title>NowLayer — Media & performance overlay for Windows<\/title>/);
   assert.match(html, /name="description"/);
   assert.match(html, /property="og:image"/);
   assert.match(html, /class="skip-link"/);

@@ -85,3 +85,20 @@ Before publishing:
 5. Scan the exact release EXE with Microsoft Defender and VirusTotal.
 
 See [docs/RELEASING.md](docs/RELEASING.md) for versioning and GitHub Release automation.
+
+## Performance acceptance checks
+
+- Enable Performance with no optional tools: CPU and RAM update; FPS, temperatures
+  and unsupported GPU fields clearly remain unavailable.
+- Follow [performance setup](docs/PERFORMANCE.md), then compare FPS with PresentMon
+  for the same game process. Stop the game and confirm old FPS is cleared.
+- Compare NVIDIA and Libre Hardware Monitor readings with their own tools. Stop
+  a provider and confirm readings expire. Test zero usage and multiple adapters.
+- Move the performance widget, change its own opacity, restart NowLayer, and verify
+  preferences persist. Lock it and verify mouse clicks reach the game underneath.
+- Hide/show with the configured shortcut, disable monitoring, reset settings, and
+  quit: verify collection stops and owned helper/ETW sessions are cleaned up.
+- Test media and Video PiP alongside performance with the personalization controls.
+- Check the website's mobile menu, keyboard-operated overlay tabs, release download
+  links, and FAQ. If the GitHub API is unavailable, download links should still
+  open GitHub's latest release page.
