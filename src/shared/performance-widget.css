@@ -8,9 +8,10 @@
 .nl-performance small { color:var(--nl-accent); font-size:10px; font-weight:750; letter-spacing:.035em; white-space:nowrap; }
 .nl-performance strong { color:var(--nl-text); font-size:15px; font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
 .nl-performance section.is-missing strong { color:var(--nl-muted); font-size:10px; font-weight:600; }
-.nl-performance[data-layout="strip"] { padding:0 10px; }
-.nl-performance[data-layout="strip"] .nl-metrics { grid-template-columns:repeat(auto-fit,minmax(62px,1fr)); align-items:center; gap:8px; }
-.nl-performance[data-layout="strip"] section { display:flex; align-items:baseline; gap:5px; }
+.nl-performance[data-layout="strip"] { padding:0 12px; }
+.nl-performance[data-layout="strip"] .nl-metrics { grid-template-columns:repeat(auto-fit,minmax(86px,1fr)); align-items:center; gap:10px; }
+.nl-performance[data-layout="strip"] section { display:flex; align-items:baseline; gap:6px; overflow:hidden; }
+.nl-performance[data-layout="strip"] small { font-size:9px; }
 .nl-performance[data-layout="strip"] strong { font-size:13px; }
 .nl-performance[data-layout="compact"] { padding:9px 12px; }
 .nl-performance[data-layout="compact"] .nl-metrics { grid-template-columns:repeat(4,minmax(0,1fr)); align-content:center; row-gap:8px; }

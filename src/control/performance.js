@@ -1,13 +1,13 @@
 (() => {
   const metricIds = { fps: 'metricFps', frameTime: 'metricFrameTime', cpu: 'metricCpu', cpuTemp: 'metricCpuTemp', gpu: 'metricGpu', gpuTemp: 'metricGpuTemp', ram: 'metricRam', vram: 'metricVram' };
-  const ids = ['performanceLayout', 'performanceTheme', 'performancePreview', 'performancePreviewLabel', 'performanceOpacity', 'performanceOpacityValue', 'performanceEnabled', 'performanceAnchor', 'performanceGpu', 'performanceUpdateRate', 'performanceFps', 'performanceFrameTime', 'performanceCpu', 'performanceCpuTemp', 'performanceGpuUsage', 'performanceGpuTemp', 'performanceRam', 'performanceVram', 'performanceStatus', 'performanceGpuSource', 'performanceProcess', 'savePerformanceProcess', 'performanceMessage', ...Object.values(metricIds)];
+  const ids = ['performanceLayout', 'performanceTheme', 'performancePreview', 'performancePreviewLabel', 'performanceOpacity', 'performanceOpacityValue', 'performanceEnabled', 'performanceAnchor', 'performanceGpu', 'performanceUpdateRate', 'performanceFps', 'performanceFrameTime', 'performanceCpu', 'performanceCpuTemp', 'performanceGpuUsage', 'performanceGpuTemp', 'performanceRam', 'performanceVram', 'performanceStatus', 'performanceGpuSource', 'performanceProcess', 'savePerformanceProcess', 'fixFpsPermission', 'performanceMessage', ...Object.values(metricIds)];
   const ui = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
   const preview = window.NowLayerPerformanceView.mount(ui.performancePreview);
   let config = {}, latest = null, gpuOptions = '';
   const format = (number, suffix = '', digits = 0) => Number.isFinite(number) ? `${number.toFixed(digits)}${suffix}` : 'n/a';
   function friendlyFpsStatus(status) {
     const value = String(status || 'Waiting for performance data.');
-    if (/access denied|administrative privileges|Performance Log Users|stopped/i.test(value)) return 'FPS unavailable — Windows capture permission is required. Other readings are still active.';
+    if (/access denied|administrative privileges|Performance Log Users|stopped/i.test(value)) return 'FPS needs one Windows permission. Select “Fix FPS access” below, approve Windows, then sign out and back in.';
     if (/\.exe$/i.test(value)) return `FPS target: ${value}`;
     return value.split(/\r?\n/)[0].slice(0, 180);
   }
@@ -88,6 +88,18 @@
       ui.performanceMessage.textContent = 'Enter an executable name such as game.exe, without a folder path.'; return;
     }
     update({ processName: name });
+  });
+  ui.fixFpsPermission.addEventListener('click', async () => {
+    ui.fixFpsPermission.disabled = true;
+    ui.performanceMessage.textContent = 'Waiting for Windows administrator approval…';
+    try {
+      await window.nowLayer.requestFpsPermission();
+      ui.performanceMessage.textContent = 'FPS access was enabled. Sign out of Windows and back in, then turn Performance off and on.';
+    } catch (error) {
+      ui.performanceMessage.textContent = error.message || 'Windows could not enable FPS access. Try again with an administrator account.';
+    } finally {
+      ui.fixFpsPermission.disabled = false;
+    }
   });
   window.nowLayer.onState(renderState);
   window.nowLayer.onPerformance(renderMetrics);

@@ -1,5 +1,6 @@
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
+const { execFile } = require('node:child_process');
 const {
   app,
   BrowserWindow,
@@ -47,6 +48,7 @@ const appIconPath = path.join(__dirname, '..', 'assets', 'app-icon.png');
 const scriptsPath = app.isPackaged
   ? path.join(process.resourcesPath, 'scripts')
   : path.join(__dirname, '..', '..', 'scripts');
+const fpsPermissionScript = path.join(scriptsPath, 'performance-enable-fps-access.ps1');
 
 const mediaMonitor = new MediaMonitor({
   monitorScript: path.join(scriptsPath, 'media-monitor.ps1'),
@@ -292,6 +294,38 @@ function syncMediaMonitor() {
     mediaState = { ...mediaMonitor.lastState, available: false, status: 'Paused', sampledAt: Date.now() };
   }
 }
+
+function powerShellLiteral(value) {
+  return `'${String(value).replace(/'/g, "''")}'`;
+}
+
+function requestFpsPermission() {
+  if (process.platform !== 'win32') return Promise.reject(new Error('FPS access setup is available on Windows only.'));
+  return new Promise((resolve, reject) => {
+    execFile('whoami.exe', [], { windowsHide: true, timeout: 5000, encoding: 'utf8' }, (identityError, stdout) => {
+      const account = String(stdout || '').trim();
+      if (identityError || !account || /[\r\n]/.test(account)) {
+        reject(new Error('Windows could not identify this account. Try again from your normal Windows account.'));
+        return;
+      }
+      const command = [
+        `$script = ${powerShellLiteral(fpsPermissionScript)}`,
+        `$member = ${powerShellLiteral(account)}`,
+        "$arguments = '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"' + $script + '\" -Member \"' + $member + '\"'",
+        "$child = Start-Process -FilePath 'powershell.exe' -Verb RunAs -PassThru -Wait -ArgumentList $arguments",
+        'if ($child.ExitCode -ne 0) { exit $child.ExitCode }',
+      ].join('; ');
+      execFile('powershell.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-Command', command],
+        { windowsHide: true, timeout: 60000, encoding: 'utf8' }, (error) => {
+          if (error) {
+            reject(new Error('Windows administrator approval was cancelled or FPS access could not be enabled. Try again with an administrator account.'));
+            return;
+          }
+          resolve({ restartSignIn: true });
+        });
+    });
+  });
+}
 performanceWindow.on('position', position => {
   overlayManager.updateSettings({ performance: { ...overlayManager.settings.performance, ...position } });
 });
@@ -308,6 +342,10 @@ ipcMain.handle('nowlayer:get-resource-usage', () => {
   const cpuPercent = metrics.reduce((sum, item) => sum + (Number(item.cpu?.percentCPUUsage) || 0), 0);
   const memoryMb = metrics.reduce((sum, item) => sum + (Number(item.memory?.workingSetSize) || 0), 0) / 1024;
   return { cpuPercent: Math.max(0, cpuPercent), memoryMb: Math.max(0, memoryMb), processes: metrics.length };
+});
+ipcMain.handle('nowlayer:request-fps-permission', (event) => {
+  if (!controlWindow || event.sender !== controlWindow.webContents) throw new Error('Open Control Center to update FPS access.');
+  return requestFpsPermission();
 });
 
 ipcMain.handle('nowlayer:set-setting', (_event, key, value) => {
