@@ -1,9 +1,16 @@
 (() => {
-  const ids = ['performanceLayout', 'performanceTheme', 'performancePreview', 'performancePreviewLabel', 'performanceOpacity', 'performanceOpacityValue', 'performanceEnabled', 'performanceAnchor', 'performanceGpu', 'performanceFps', 'performanceFrameTime', 'performanceCpu', 'performanceCpuTemp', 'performanceGpuUsage', 'performanceGpuTemp', 'performanceRam', 'performanceVram', 'performanceStatus', 'performanceGpuSource', 'performanceProcess', 'savePerformanceProcess', 'performanceMessage'];
+  const metricIds = { fps: 'metricFps', frameTime: 'metricFrameTime', cpu: 'metricCpu', cpuTemp: 'metricCpuTemp', gpu: 'metricGpu', gpuTemp: 'metricGpuTemp', ram: 'metricRam', vram: 'metricVram' };
+  const ids = ['performanceLayout', 'performanceTheme', 'performancePreview', 'performancePreviewLabel', 'performanceOpacity', 'performanceOpacityValue', 'performanceEnabled', 'performanceAnchor', 'performanceGpu', 'performanceUpdateRate', 'performanceFps', 'performanceFrameTime', 'performanceCpu', 'performanceCpuTemp', 'performanceGpuUsage', 'performanceGpuTemp', 'performanceRam', 'performanceVram', 'performanceStatus', 'performanceGpuSource', 'performanceProcess', 'savePerformanceProcess', 'performanceMessage', ...Object.values(metricIds)];
   const ui = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
   const preview = window.NowLayerPerformanceView.mount(ui.performancePreview);
   let config = {}, latest = null, gpuOptions = '';
-  const format = (number, suffix = '', digits = 0) => Number.isFinite(number) ? `${number.toFixed(digits)}${suffix}` : '—';
+  const format = (number, suffix = '', digits = 0) => Number.isFinite(number) ? `${number.toFixed(digits)}${suffix}` : 'n/a';
+  function friendlyFpsStatus(status) {
+    const value = String(status || 'Waiting for performance data.');
+    if (/access denied|administrative privileges|Performance Log Users|stopped/i.test(value)) return 'FPS unavailable — Windows capture permission is required. Other readings are still active.';
+    if (/\.exe$/i.test(value)) return `FPS target: ${value}`;
+    return value.split(/\r?\n/)[0].slice(0, 180);
+  }
 
   function renderMetrics(stats) {
     latest = stats;
@@ -11,7 +18,7 @@
     const example = !Number.isFinite(data.cpuUsage);
     preview.configure(config);
     preview.render(example ? { sampledAt: Date.now(), fps: 144, frameTime: 6.9, cpuUsage: 32, cpuTemperature: 58, gpu: { usage: 87, temperature: 67, memoryUsedMb: 4096 }, ramUsedGb: 12.4, ramTotalGb: 32 } : data, example);
-    const size = window.NowLayerPerformanceLayout.dimensions(config.layout);
+    const size = window.NowLayerPerformanceLayout.dimensions(config.layout, config.metrics);
     ui.performancePreviewLabel.textContent = `${example ? 'Example' : 'Live'} preview · ${size.width} × ${size.height} · actual size (scroll if needed)`;
     ui.performanceFps.textContent = format(data.fps);
     ui.performanceFrameTime.textContent = Number.isFinite(data.frameTime) ? format(data.frameTime, ' ms', 1) : 'No frames';
@@ -21,7 +28,7 @@
     ui.performanceGpuTemp.textContent = Number.isFinite(data.gpu?.temperature) ? format(data.gpu.temperature, ' °C') : 'Temperature unavailable';
     ui.performanceRam.textContent = `${format(data.ramUsedGb, '', 1)} / ${format(data.ramTotalGb, ' GiB', 1)}`;
     ui.performanceVram.textContent = Number.isFinite(data.gpu?.memoryUsedMb) ? `${format(data.gpu.memoryUsedMb / 1024, '', 1)} / ${format(Number.isFinite(data.gpu.memoryTotalMb) ? data.gpu.memoryTotalMb / 1024 : null, ' GiB VRAM', 1)}` : 'VRAM unavailable';
-    ui.performanceStatus.textContent = data.fpsStatus || 'Waiting for performance data.';
+    ui.performanceStatus.textContent = friendlyFpsStatus(data.fpsStatus);
     ui.performanceGpuSource.textContent = data.gpu ? `${data.gpu.name} · ${data.gpu.source}` : 'GPU unavailable. Check the selected adapter and sensor provider.';
     const choices = [['', 'Automatic'], ...(data.gpus || []).map(gpu => [gpu.id, `${gpu.name} · ${gpu.source}`])];
     if (config.gpuId && !choices.some(([id]) => id === config.gpuId)) choices.push([config.gpuId, 'Selected GPU (unavailable)']);
@@ -44,6 +51,8 @@
     ui.performanceOpacity.title = config.theme === 'minimal' ? 'The Minimal HUD has no background.' : '';
     ui.performanceEnabled.checked = config.enabled === true;
     ui.performanceAnchor.value = config.anchor || 'top-left';
+    ui.performanceUpdateRate.value = config.updateRate || 'efficient';
+    for (const [key, id] of Object.entries(metricIds)) ui[id].checked = config.metrics?.[key] !== false;
     if (document.activeElement !== ui.performanceProcess) ui.performanceProcess.value = config.processName || '';
     if (!state.settings?.visible && config.enabled) ui.performanceMessage.textContent = 'Monitoring paused: show the overlay to resume.';
     else if (ui.performanceMessage.textContent.startsWith('Monitoring paused:')) ui.performanceMessage.textContent = '';
@@ -63,6 +72,16 @@
   ui.performanceEnabled.addEventListener('change', () => update({ enabled: ui.performanceEnabled.checked }));
   ui.performanceAnchor.addEventListener('change', () => update({ anchor: ui.performanceAnchor.value }));
   ui.performanceGpu.addEventListener('change', () => update({ gpuId: ui.performanceGpu.value }));
+  ui.performanceUpdateRate.addEventListener('change', () => update({ updateRate: ui.performanceUpdateRate.value }));
+  for (const [key, id] of Object.entries(metricIds)) ui[id].addEventListener('change', () => {
+    const metrics = { ...(config.metrics || {}), [key]: ui[id].checked };
+    if (!Object.values(metrics).some(Boolean)) {
+      ui[id].checked = true;
+      ui.performanceMessage.textContent = 'Keep at least one reading visible.';
+      return;
+    }
+    update({ metrics });
+  });
   ui.savePerformanceProcess.addEventListener('click', () => {
     const name = ui.performanceProcess.value.trim();
     if (name && (!/^[^\\/:*?"<>|\x00-\x1f]+\.exe$/i.test(name) || name.startsWith('-'))) {

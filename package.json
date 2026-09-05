@@ -1,6 +1,6 @@
 {
   "name": "nowlayer",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "A distraction-free media and video PiP overlay for Windows gamers.",
   "main": "src/main/index.js",
   "author": {

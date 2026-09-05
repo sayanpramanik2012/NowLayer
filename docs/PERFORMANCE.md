@@ -1,25 +1,27 @@
 # Performance overlay
 
 Enable **Performance** on Home. Open **Customize** to change its appearance.
-The default is a slim horizontal strip, 560 × 34 logical pixels. Existing saved
-settings automatically adopt this layout when no layout preference is stored.
+The default is a slim horizontal strip, 470 × 34 logical pixels with the default
+readings. Its width changes automatically when readings are added or removed.
 
 | Layout | Size | Best use |
 | --- | --- | --- |
-| Slim strip (default) | 560 × 34 | Along the top or bottom edge |
-| Compact row | 360 × 64 | A corner with limited horizontal space |
-| Detailed card | 300 × 140 | More readable labels in a small two-column card |
+| Slim strip (default) | 260–700 × 34 | Along the top or bottom edge |
+| Compact row | 360 × 64 or 92 | A corner with limited horizontal space |
+| Detailed card | 300 × dynamic height | More readable labels in a small two-column card |
 
 Choose **Graphite**, **Midnight**, or **Minimal HUD** (text only, no background).
 The Control Center preview uses the same component as the real overlay and shows
 its actual logical size. Example values are labelled when monitoring is inactive.
 Windows display scaling determines the physical pixel size. Setup errors appear
-in Control Center, not in a persistent banner over the game. Missing readings use
-a dash. Temperatures and frame time remain in every layout; RAM/VRAM use `G` for GiB.
+in Control Center, never in a tooltip or banner over the game. Missing readings use
+a small `n/a`. FPS, frame time, CPU/GPU usage and temperature, RAM, and VRAM can
+each be hidden. Hidden provider-backed readings skip their related helper work.
 
 The widget has its own corner/drag position and background opacity. Minimal HUD
 has no background, so its background-opacity control is disabled. It follows the existing
-lock and all-overlay visibility shortcuts. Hiding it pauses collection; disabling it or
+lock and all-overlay visibility shortcuts. Efficient mode updates every two seconds;
+Responsive mode updates every second. Hiding it pauses collection; disabling it or
 quitting stops its helper processes and requests cleanup of its own ETW session.
 
 ## Data sources
@@ -42,7 +44,8 @@ VRAM counters. Missing values are shown as unavailable, never as zero.
 ## Game FPS setup
 
 1. Enable **Performance** on Home, then switch to your game in borderless-windowed mode.
-2. NowLayer follows the foreground app by process ID. Opening Control Center keeps the last game target; switching to the desktop clears it.
+2. NowLayer follows the foreground app and starts PresentMon for that one process ID.
+   Opening Control Center keeps the last game target; switching to the desktop stops capture.
 3. Optionally enter `game.exe` under Performance customization to pin one executable. Leave blank for automatic selection.
 
 The Windows installer includes the standalone PresentMon Console **2.3.1** executable and its MIT license. No separate installation, download, or path selection is needed by users. Builds fetch the pinned official x64 release, verify its SHA-256, and package it under `resources/presentmon`. Installed capture works offline. Legacy custom helper paths are discarded.
@@ -57,7 +60,7 @@ After correcting a launch or permission error, toggle performance off and on.
 FPS is **application present rate**, calculated from the mean of valid
 `MsBetweenPresents` intervals in each approximately one-second update. It is not
 NowLayer's renderer FPS, and it is not a guarantee of displayed/generated FPS.
-Process IDs and swap chains are kept separate; the chain with the most frame
+Only the chosen foreground process is sent to PresentMon. Process IDs and swap chains are kept separate; the chain with the most frame
 samples in that update is shown rather than adding unrelated streams together.
 The console runs with `--v1_metrics` to request a stable CSV schema. See the
 [PresentMon console documentation](https://github.com/GameTechDev/PresentMon/blob/main/README-ConsoleApplication.md).
@@ -75,7 +78,8 @@ working. Sensor values expire after six seconds without a valid sample.
 NVIDIA data is queried every two seconds with a 1.5-second process timeout and
 30-second retry delay on failure. See
 [NVIDIA's query reference](https://nvidia.custhelp.com/app/answers/detail/a_id/3751/~/useful-nvidia-smi-queries).
-Sampling uses read-only queries. Changing widget position/opacity does not restart
+Sampling uses read-only queries. Efficient mode runs NVIDIA queries every five
+seconds; Responsive mode uses two seconds. Changing widget position/opacity does not restart
 capture. UI updates use a separate IPC event, avoiding repeated media artwork
 transfers on each performance tick.
 

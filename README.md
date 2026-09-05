@@ -74,9 +74,17 @@ sensor providers. See [setup and data-source details](docs/PERFORMANCE.md).
 ## New in 1.1.0
 
 - Home centralizes media, performance, Video PiP, clock, countdown, and alarm switches, with direct customization links.
-- Performance defaults to a 560 × 34 strip, with compact/detailed layouts and Graphite/Midnight/Minimal HUD themes.
+- Performance defaults to a 34-pixel-tall strip that resizes around selected readings, with compact/detailed layouts and Graphite/Midnight/Minimal HUD themes.
 - PresentMon Console is bundled and integrity-checked during builds; users do not install or locate it. Windows capture permissions still apply.
 - Real Windows media thumbnails are displayed when supplied; missing artwork no longer reserves a placeholder.
 - The website includes an interactive layout/theme preview and updated setup guidance.
 
 Media and Video PiP share one overlay. Turning media on stops PiP; stopping PiP restores media if enabled. Home clock/countdown switches can enable a separate time widget. Hiding a countdown does not cancel it, and hiding overlays does not disable alarms.
+
+## New in 1.1.1
+
+- Fixed overlapping Home switches and removed the native diagnostics tooltip that could cover a game.
+- Every performance reading is optional; the 34-pixel strip shortens to fit selected metrics and uses a quiet `n/a` for unavailable data.
+- Efficient mode samples every two seconds, launches FPS capture only for the foreground game's process ID, and skips unused sensor providers.
+- Video PiP offers 15, 24, and 30 FPS modes and stops its capture stream when overlays are hidden.
+- Overlays stay out of the Control Center; disabled/hidden windows and their media helper release memory, the timer scheduler wakes once per second, and Help reports NowLayer's live CPU and working-set memory.

@@ -28,6 +28,15 @@ test('control center script only references elements that exist', () => {
   assertJavaScriptIdsExist('src/control/index.html', 'src/control/home.js');
 });
 
+test('performance overlay keeps diagnostics off the game surface', () => {
+  const view = read('src/shared/performance-view.js');
+  const styles = read('src/control/styles.css');
+  assert.doesNotMatch(view, /container\.title\s*=/);
+  assert.match(view, /removeAttribute\('title'\)/);
+  assert.match(view, /'n\/a'/);
+  assert.match(styles, /\.home-module input\[type="checkbox"\]\s*\{\s*width:\s*40px/);
+});
+
 test('renderer pages enforce a restrictive content security policy', () => {
   for (const file of ['src/renderer/index.html', 'src/control/index.html']) {
     const html = read(file);
@@ -51,6 +60,9 @@ test('video PiP controls and bundled Material icon sprite are present', () => {
   assert.match(overlayStyles, /\.overlay\.is-video \.content\s*{\s*display: none;/);
   assert.match(preload, /listCaptureSources/);
   assert.match(preload, /setCaptureSource/);
+  assert.match(controlHtml, /id="videoFrameRateSelect"/);
+  assert.match(overlayStyles, /\.overlay\.is-video/);
+  assert.match(read('src/renderer/app.js'), /settings\.visible === false \? \{ active: false \}/);
   assert.match(icons, /<symbol id="pip"/);
   assert.match(icons, /<symbol id="lock-open"/);
 });

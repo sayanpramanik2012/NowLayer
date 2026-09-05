@@ -15,6 +15,7 @@ test('sanitizeSettings rejects unsafe and out-of-range values', () => {
     opacity: 7,
     mediaOpacity: 0.1,
     videoOpacity: 2,
+    videoFrameRate: 99,
     pipBounds: { width: 777, height: 1 },
     anchor: 'somewhere',
     margin: -40,
@@ -29,6 +30,7 @@ test('sanitizeSettings rejects unsafe and out-of-range values', () => {
   assert.equal(result.opacity, 1);
   assert.equal(result.mediaOpacity, 0.3);
   assert.equal(result.videoOpacity, 1);
+  assert.equal(result.videoFrameRate, 24);
   assert.deepEqual(result.pipBounds, { width: 777, height: 437 });
   assert.equal(result.anchor, 'bottom-right');
   assert.equal(result.margin, 0);

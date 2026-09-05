@@ -111,3 +111,13 @@ See [docs/RELEASING.md](docs/RELEASING.md) for versioning and GitHub Release aut
 - Install on Windows without any separate PresentMon installation. Enable Performance, switch between two games, then desktop. Verify process isolation and stale FPS clearing. Check permission errors appear in Control Center.
 - Play Spotify and YouTube Music with/without supplied thumbnails. Verify actual art, title/time/buttons, and no N placeholder or empty image slot.
 - Confirm the installer contains resources/presentmon/PresentMon.exe and LICENSE.txt, with the pinned hash. Test a fresh install and upgrade to 1.1.0.
+
+### Version 1.1.1 regression and impact checks
+
+- Verify Home switches render as one pill and one thumb in both states at 100%, 125%, and 150% Windows scaling.
+- Hover every point of the in-game performance strip. No diagnostics tooltip or error text may appear over the game.
+- Toggle every reading individually. The strip must resize, unavailable values must show a small `n/a`, and the UI must keep at least one reading.
+- In automatic FPS mode, confirm only the foreground game's PID is passed to PresentMon. Alt-tab to Explorer and confirm capture stops; return to the game and confirm it restarts.
+- With FPS, GPU, VRAM, and both temperatures hidden, verify neither PresentMon, nvidia-smi, nor the sensor PowerShell helper remains active.
+- Hide all overlays while Video PiP is active and verify its media track ends. Compare 15, 24, and 30 FPS modes while watching the Help page CPU/memory readings and in-game frame time.
+- Close Control Center and verify its renderer process exits. Reopen from the tray and confirm settings remain intact.
